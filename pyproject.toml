@@ -1,0 +1,50 @@
+[project]
+name = "github-actions-training"
+version = "0.1.0"
+description = "Labs vérifiables de la formation GitHub Actions du blog, joués avec act"
+requires-python = ">=3.12"
+dependencies = [
+    "pytest>=9.1.1",
+    "pyyaml>=6.0.3",
+]
+
+[tool.uv]
+# Ce dépôt n'est pas un package Python : c'est un catalogue de labs.
+package = false
+
+[tool.ruff]
+# Jeu de règles repris à l'identique des catalogues frères (Kubernetes,
+# Terraform, Linux) : un contributeur qui passe de l'un à l'autre ne doit pas
+# réapprendre ce qui est accepté.
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E4", "E7", "E9", "F",
+    "I", "UP", "B", "BLE", "SIM", "RUF", "EXE", "DTZ", "PLE", "PLW", "S",
+]
+ignore = [
+    # Les messages d'assertion enseignent ; les couper à 88 colonnes les
+    # rendrait moins lisibles.
+    "E501",
+    # `assert` est le verbe de pytest.
+    "S101",
+    # Appeler act, zizmor ou pinact par leur nom depuis le PATH est le métier
+    # de ce dépôt : c'est ainsi que l'apprenant les appelle.
+    "S603", "S607",
+]
+
+[tool.pytest.ini_options]
+# Tous les labs nomment leur test `tests/test_functional.py` : le mode
+# d'import « prepend » les prendrait pour un seul module. importlib les isole
+# par leur chemin.
+addopts = "--import-mode=importlib -p no:cacheprovider"
+
+# Ne collecter QUE les tests des labs (labs/<module>/<id>/tests/) et ceux du
+# catalogue (tests/). Le point de départ d'un lab (`challenge/`) porte souvent
+# ses propres tests, ceux de l'application à intégrer : ils tournent DANS le
+# workflow, sous act, jamais ici.
+testpaths = ["labs", "tests"]
+norecursedirs = [
+    "challenge", "solution", ".git", ".venv", "work", "__pycache__",
+]
