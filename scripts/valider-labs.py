@@ -294,11 +294,70 @@ def verdict(r: dict, rejeu: bool) -> str:
     return "VALIDE" if not raisons else "ROUGE"
 
 
+def relire() -> int:
+    """Le verdict versionné couvre-t-il le catalogue, et est-il vert ?
+
+    POURQUOI CE MODE EXISTE
+
+    Rejouer les labs prend des minutes et demande Docker ; relire le verdict
+    prend une milliseconde. Un hook local et la moitié des jobs de CI n'ont
+    besoin que de la seconde question : « ce qui est versionné dit-il que le
+    catalogue tient ? »
+
+    Il vérifie DEUX choses, et la première est la moins évidente : qu'aucun lab
+    n'a été ajouté sans être validé. Un fichier de verdicts tous verts qui
+    ignore la moitié du catalogue passerait sans elle.
+    """
+    if not RESULTATS.is_file():
+        print(f"{RESULTATS.name} est absent : aucun lab n'a jamais été validé.", file=sys.stderr)
+        return 1
+
+    verdicts = json.loads(RESULTATS.read_text(encoding="utf-8"))
+    labs = sorted(p.name for p in LABS.iterdir() if (p / "lab.yaml").is_file())
+
+    manquants = [nom for nom in labs if nom not in verdicts]
+    if manquants:
+        print(
+            f"{len(manquants)} lab(s) sans verdict : {', '.join(manquants)}.\n"
+            "Un lab livré sans validation ne prouve rien. Jouez "
+            "`mise exec -- uv run scripts/valider-labs.py --lab <id>`.",
+            file=sys.stderr,
+        )
+        return 1
+
+    rouges = [nom for nom in labs if verdicts[nom].get("verdict") != "VALIDE"]
+    if rouges:
+        for nom in rouges:
+            raisons = verdicts[nom].get("raisons") or [verdicts[nom].get("erreur", "raison non enregistrée")]
+            print(f"{nom} : {'; '.join(raisons)}", file=sys.stderr)
+        return 1
+
+    fantomes = sorted(set(verdicts) - set(labs))
+    if fantomes:
+        print(
+            f"{RESULTATS.name} porte le verdict de lab(s) qui n'existent plus : "
+            f"{', '.join(fantomes)}. Retirez ces entrées.",
+            file=sys.stderr,
+        )
+        return 1
+
+    print(f"{len(labs)} lab(s), aucun ROUGE")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--lab", action="append", help="ne jouer que ce lab (répétable)")
     ap.add_argument("--sans-rejeu", action="store_true", help="sauter l'étape clean, run, check")
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="relire validation-labs.json sans rien rejouer : exit 0 si chaque lab y est VALIDE",
+    )
     args = ap.parse_args()
+
+    if args.check:
+        return relire()
 
     attendue, installee = version_act_attendue(), version_act()
     if attendue != installee:
