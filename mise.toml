@@ -1,0 +1,23 @@
+# Les outils du catalogue, épinglés. `mise install` les pose tous, à la
+# version mesurée ici, sans curl d'archive ni gestionnaire de paquets système.
+#
+# Versions mesurées le 2026-09-25 (`mise ls-remote <outil> | tail -1`, et
+# `gh api repos/<owner>/<repo>/releases/latest`). Une montée de version se
+# fait ici, et se date : `scripts/valider-labs.py` enregistre la version d'act
+# avec chaque verdict, et refuse de jouer avec une autre.
+#
+# Pourquoi 0.2.89 et rien de plus ancien : toute version d'act antérieure à
+# 0.2.86 est vulnérable à CVE-2026-34041 et CVE-2026-34042 (injection
+# d'environnement, injection dans le serveur de cache), et act le dit lui-même
+# au lancement.
+
+[tools]
+act = "0.2.89"
+actionlint = "1.7.12"
+zizmor = "1.30.1"
+pinact = "5.0.0"
+"github:boostsecurityio/poutine" = "1.1.6"
+# 0.12.19 est sorti le jour de la mesure ; le registre aqua de mise s'arrêtait
+# à 0.12.18. À remonter au prochain passage.
+uv = "0.12.18"
+"pipx:check-jsonschema" = "0.38.2"

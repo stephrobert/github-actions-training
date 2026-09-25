@@ -1,0 +1,88 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/stephrobert/dsoxlab/main/schemas/meta.schema.json
+#
+# Source de vérité de l'ordre des labs et de leur regroupement en sections,
+# calqué sur le parcours du blog :
+#   https://blog.stephane-robert.info/docs/pipeline-cicd/github/parcours/
+#
+# Chaque entrée `sections[].labs[]` est un chemin relatif depuis `labs/`. Le
+# lab existe pour dsoxlab si et seulement si `labs/<ce-chemin>/lab.yaml`
+# existe : ce fichier ne fait qu'ORDONNER et NOMMER les blocs.
+# tests/test_meta_declare_les_labs.py refuse un lab sur disque absent d'ici,
+# et un lab déclaré ici absent du disque.
+#
+# Les sections sans lab livré gardent `labs: []` et nomment l'issue qui les
+# porte, pour que la lecture de ce fichier suffise à voir le reste à faire.
+
+repo:
+  id: github-actions-training
+  category: github-actions
+  title: "GitHub Actions Training: verifiable labs"
+  blog_url: "https://blog.stephane-robert.info/docs/pipeline-cicd/github/parcours/"
+  issues_url: "https://github.com/stephrobert/github-actions-training/issues"
+  description: |
+    One lab per skill of the blog's GitHub Actions course. Each lab has a
+    starting point, a check that really runs the workflow with act, a
+    reference solution, and was proven both ways: 0 before the work, 100
+    after.
+
+# PAS de bloc `infra:` ici, par conception : tous les labs sont de type
+# `shell`. Le workflow se joue sur le poste de l'apprenant, avec act et
+# Docker, et ce que act ne sait pas jouer (filtres de déclencheur, OIDC,
+# environnements protégés, rulesets) se prouve sur un dépôt GitHub de
+# l'apprenant, désigné par LAB_REPO=owner/nom.
+#
+# Prérequis côté apprenant : Docker qui répond, et les outils de mise.toml
+# (`mise install` : act, actionlint, zizmor, pinact, poutine, uv).
+
+sections:
+  - id: fondations
+    title: "Writing your first workflow"
+    description: "What a workflow is, where secrets and configuration variables live, and how to assess a Marketplace action before adopting it."
+    labs:
+      - fondations-premier-workflow   # en chantier, issue #16
+      # à venir : issues #17 et #18
+
+  - id: workflows
+    title: "Designing dynamic workflows"
+    description: "Job graphs, outputs, conditions, matrices, reusable workflows and composite actions."
+    labs: []   # issues #19 à #23
+
+  - id: securite
+    title: "Defending the supply chain"
+    description: "Template injection, pinning and maintaining SHAs, auditing with zizmor, poutine and plumber, harden-runner."
+    labs: []   # issues #24 à #27
+
+  - id: securite-permissions
+    title: "Least privilege, OIDC and provenance"
+    description: "Minimal GITHUB_TOKEN permissions, the pull_request_target trap, OIDC without long-lived keys, attestations."
+    labs: []   # issues #28 à #31
+
+  - id: securite-lab
+    title: "A hardened GitHub pipeline, end to end"
+    description: "Five workshops whose reference result is stephrobert/secure-python-pipeline."
+    labs: []   # issues #32 à #36
+
+  - id: deployer
+    title: "Delivering: environments and deployments"
+    description: "Named environments, approvals, promotion by digest, rollback without rebuild."
+    labs: []   # issue #37
+
+  - id: optimiser
+    title: "Speeding up and debugging the pipelines"
+    description: "Artifacts between jobs, dependency cache, debugging a failing workflow, concurrency."
+    labs: []   # issues #38 à #41
+
+  - id: runners
+    title: "Choosing and securing the runners"
+    description: "Ephemeral runners in containers, hardening a self-hosted fleet."
+    labs: []   # issues #42 et #43
+
+  - id: gouvernance
+    title: "Governing the CI beyond the YAML"
+    description: "Rulesets, CODEOWNERS, allowed actions policy."
+    labs: []   # issues #44 et #45
+
+  - id: outils
+    title: "The command line toolkit"
+    description: "actionlint, act and gh, driven from the terminal."
+    labs: []   # issues #46 à #48

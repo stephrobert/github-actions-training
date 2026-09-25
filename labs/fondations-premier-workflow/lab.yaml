@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/stephrobert/dsoxlab/main/schemas/lab.schema.json
+id: fondations-premier-workflow
+title: "First workflow: the tests run on every push, and a broken test turns the pipeline red"
+description: |
+  A small Python library with nine tests that nobody runs before merging.
+  Write the workflow that runs them on every push and pull request, with
+  minimal permissions and pinned actions, and prove it by breaking a test.
+section: fondations
+# `level` reprend le module du parcours du blog, mot pour mot.
+level: fondations
+difficulty: beginner
+lab_type: lab
+estimated_time: 30m
+skills:
+  - github-actions
+  - workflow
+  - ci
+  - pytest
+  - permissions
+  - sha-pinning
+# Le lab se joue sur le poste de l'apprenant ; act y joue le workflow dans
+# l'image ubuntu-24.04 du runner, épinglée par digest dans .actrc.
+distros:
+  - ubuntu24
+doc_url: https://blog.stephane-robert.info/docs/pipeline-cicd/github/fondations/workflow/
+runtime:
+  type: shell
+  workdir: challenge/work
+  # Le point de départ : l'application et ses tests, sans aucun workflow.
+  # Une fixture non déclarée ici n'est pas copiée.
+  fixtures:
+    - .actrc
+    - .gitignore
+    - README.md
+    - pytest.ini
+    - requirements.txt
+    - src/__init__.py
+    - src/calculator.py
+    - tests/test_calculator.py
+validation:
+  functional: true
+  security: false
+  persistence_after_reboot: false
