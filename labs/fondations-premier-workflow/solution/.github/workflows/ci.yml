@@ -1,0 +1,62 @@
+# Solution de reference.
+#
+# Le nom du fichier est libre : GitHub joue TOUT fichier `.yml` ou `.yaml` de
+# `.github/workflows/`. Ce qui n'est pas libre, c'est l'emplacement : un
+# workflow pose ailleurs n'est jamais lu, et rien ne le signale.
+name: CI
+
+# Deux evenements, et les filtres de branche avec.
+#
+# act les ignore : il joue l'evenement qu'on lui nomme, quelle que soit la
+# branche. Ce n'est pas une raison de les omettre, parce que sur GitHub ils
+# comptent, et un workflow eprouve sans eux se comporte autrement une fois
+# pousse.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Les permissions se declarent au niveau du workflow, et au plus juste.
+#
+# Sans ce bloc, le jeton prend les permissions par defaut du depot, qui peuvent
+# etre en ecriture sur tout. Ici le job ne fait que lire le code et lancer des
+# tests : `contents: read` suffit, et c'est ce que Scorecard attend.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      # Chaque action est epinglee sur le SHA COMPLET de son commit, avec la
+      # version en commentaire. Un tag est deplacable : `@v7` peut designer un
+      # autre code demain, y compris du code hostile si le depot est compromis.
+      # Un SHA ne bouge pas.
+      #
+      # Le commentaire n'est pas decoratif : c'est lui que Dependabot lit pour
+      # proposer la montee de version, et lui qui rend la ligne relisible.
+      - name: Recuperer le code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Sans cette ligne, checkout laisse le jeton du job dans
+          # `.git/config`, ou tout step suivant peut le lire, et ou il finit
+          # dans un artefact si quelqu'un archive le repertoire. C'est le
+          # constat `artipacked` de zizmor, et il tombe sur ce workflow tant
+          # que la ligne manque.
+          #
+          # Ce job ne pousse rien : il n'a aucun usage du jeton apres le clone.
+          persist-credentials: false
+
+      - name: Installer Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Installer les dependances
+        run: python -m pip install -r requirements.txt
+
+      # `-v` nomme les neuf tests un par un. C'est ce que la verification lit :
+      # un pipeline qui affiche « tests OK » sans les avoir lances ne passe pas.
+      - name: Lancer les tests
+        run: python -m pytest -v

@@ -41,6 +41,7 @@ import contextlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -87,14 +88,47 @@ def dsoxlab(sous_commande: list[str], journal, timeout: int) -> subprocess.Compl
     return commande(["dsoxlab", *sous_commande], journal, timeout)
 
 
+# `FAILED chemin/test_functional.py::test_nom - message` : la ligne de résumé
+# que pytest écrit pour chaque échec, la seule qui nomme le test.
+_RE_ECHEC = re.compile(r"^FAILED\s+\S+::(\S+)", re.MULTILINE)
+
+
+def tests_en_echec(sortie: str) -> list[str]:
+    """Les noms des tests qu'un `check` a laissés rouges.
+
+    POURQUOI LES EXTRAIRE
+
+    « la solution ne fait pas passer tous les tests » dit qu'il y a un
+    problème ; il ne dit pas lequel, et c'est pourtant la seule information
+    utile pour le corriger. La sortie de pytest est dans le JSON de dsoxlab :
+    la lire coûte une expression régulière et épargne d'ouvrir le journal.
+
+    La sortie du terminal est repliée sur la largeur de la console, ce qui
+    coupe les noms longs en plein milieu. On recolle donc les lignes de
+    continuation avant de lire.
+    """
+    recollee = re.sub(r"\n(?=[A-Za-z_])", "", sortie) if "\nFAILED" not in sortie else sortie
+    noms = _RE_ECHEC.findall(recollee)
+    if not noms:
+        # Le repli a pu couper juste après « FAILED ». On retente en
+        # supprimant tous les retours à la ligne, au prix de la lisibilité.
+        noms = _RE_ECHEC.findall("FAILED " + sortie.replace("\n", ""))
+    return sorted(set(noms))
+
+
 def check(lab: str, journal) -> dict:
-    """Rend {"passed", "total", "score"} de dsoxlab check --json."""
+    """Rend {"passed", "total", "score", "echecs"} de dsoxlab check --json."""
     res = dsoxlab(["check", lab, "--json"], journal, 900)
     try:
         d = json.loads(res.stdout)["check"]
     except (json.JSONDecodeError, KeyError) as e:
         raise Echec(f"dsoxlab check n'a pas rendu de JSON lisible : {e}") from e
-    return {"passed": d.get("passed", 0), "total": d.get("total", 0), "score": d.get("score", 0)}
+    return {
+        "passed": d.get("passed", 0),
+        "total": d.get("total", 0),
+        "score": d.get("score", 0),
+        "echecs": tests_en_echec(d.get("output", "")),
+    }
 
 
 def workdir(lab: Path) -> Path:
@@ -140,7 +174,11 @@ def valider(lab: Path, rejeu: bool) -> dict:
         "date": datetime.now(tz=UTC).date().isoformat(),
         "act": version_act(),
         "image": IMAGE_RUNNER,
-        "journal": str(journal_path),
+        # Le chemin du journal est enregistré RELATIF au cache de l'utilisateur :
+        # `validation-labs.json` est versionné et lu par d'autres, et
+        # `/home/<qui-que-ce-soit>/...` n'a de sens pour personne d'autre que
+        # celui qui a joué la campagne.
+        "journal": str(journal_path.relative_to(Path.home())),
     }
     etapes: list[str] = []
 
@@ -161,12 +199,7 @@ def valider(lab: Path, rejeu: bool) -> dict:
             resultat["avant"] = check(ident, journal)
             dire(f"avant le travail : {resultat['avant']['passed']}/{resultat['avant']['total']}")
 
-            solution = lab / "challenge" / "solution.sh"
-            res = commande(["bash", "-s"], journal, 600, entree=solution.read_text(encoding="utf-8"),
-                           cwd=workdir(lab))
-            if res.returncode != 0:
-                raise Echec(f"la solution du formateur a échoué (rc={res.returncode}) : "
-                            f"{(res.stdout + res.stderr).strip()[-400:]}")
+            poser_solution(lab, journal)
             resultat["apres"] = check(ident, journal)
             dire(f"après la solution : {resultat['apres']['passed']}/{resultat['apres']['total']}")
 
@@ -198,14 +231,61 @@ def valider(lab: Path, rejeu: bool) -> dict:
     return resultat
 
 
+def poser_solution(lab: Path, journal) -> None:
+    """Pose `solution/` par-dessus le répertoire de travail, fichier par fichier.
+
+    POURQUOI UNE COPIE ET PAS UN SCRIPT
+
+    Ce que le formateur livre ici est un ARBORESCENCE de fichiers, pas une suite
+    de gestes : un workflow est un fichier à sa place. Un `solution.sh` qui
+    écrirait ces fichiers en heredoc ferait le même travail en moins lisible, et
+    c'est `solution/` que documentent l'anatomie d'un lab et la CI, qui passe
+    zizmor sur `labs/**/solution/`.
+
+    La copie descend dans les SOUS-RÉPERTOIRES, et c'est le piège : `.github/
+    workflows/ci.yml` est à trois niveaux, et une pose à plat ne créerait rien
+    d'utile. Le catalogue Terraform a perdu une campagne entière sur exactement
+    ce défaut, quinze labs rendant 0 puis 0.
+    """
+    source = lab / "solution"
+    if not source.is_dir():
+        raise Echec(
+            "le lab n'a pas de répertoire `solution/` : rien à poser, et le "
+            "cycle ne peut pas prouver que les tests passent une fois le "
+            "travail fait"
+        )
+
+    cible = workdir(lab)
+    fichiers = [f for f in sorted(source.rglob("*")) if f.is_file()]
+    if not fichiers:
+        raise Echec("le répertoire `solution/` est vide")
+
+    for fichier in fichiers:
+        destination = cible / fichier.relative_to(source)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(fichier, destination)
+
+    journal.write(f"solution posée : {len(fichiers)} fichier(s)\n")
+    for fichier in fichiers:
+        journal.write(f"  {fichier.relative_to(source)}\n")
+    journal.flush()
+
+
 def verdict(r: dict, rejeu: bool) -> str:
     if "erreur" in r:
         return "ROUGE"
     raisons = []
     if r["avant"]["passed"] != 0:
         raisons.append(f"{r['avant']['passed']} test(s) passent avant le travail")
-    if r["apres"]["passed"] != r["apres"]["total"] or r["apres"]["total"] == 0:
-        raisons.append("la solution ne fait pas passer tous les tests")
+    if r["apres"]["total"] == 0:
+        raisons.append("aucun test n'a été collecté : le lab ne mesure rien")
+    elif r["apres"]["passed"] != r["apres"]["total"]:
+        restes = r["apres"]["echecs"]
+        detail = f" : {', '.join(restes)}" if restes else ""
+        raisons.append(
+            f"la solution laisse {r['apres']['total'] - r['apres']['passed']} test(s) "
+            f"en échec{detail}"
+        )
     if rejeu and r["rejeu"]["passed"] != 0:
         raisons.append(f"{r['rejeu']['passed']} test(s) passent après clean et run")
     if r["ecarts"]:
