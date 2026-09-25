@@ -35,7 +35,7 @@ jobs:
 
       # Initialisation de CodeQL
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v3.28.0
+        uses: github/codeql-action/init@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
         with:
           languages: ${{ matrix.language }}
           # Requêtes de sécurité étendues
@@ -43,10 +43,10 @@ jobs:
 
       # Auto-build (CodeQL détecte automatiquement le langage)
       - name: Autobuild
-        uses: github/codeql-action/autobuild@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v3.28.0
+        uses: github/codeql-action/autobuild@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
 
       # Analyse CodeQL
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v3.28.0
+        uses: github/codeql-action/analyze@b1bff81932f5cdfc8695c7752dcee935dcd061c8 # v4.33.0
         with:
           category: "/language:${{ matrix.language }}"
