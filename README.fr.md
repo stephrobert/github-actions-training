@@ -3,7 +3,7 @@
 **Language:** [English](./README.md) · [Français](./README.fr.md)
 
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/stephrobert/github-actions-training?label=OpenSSF%20Scorecard)](https://securityscorecards.dev/viewer/?uri=github.com/stephrobert/github-actions-training)
-[![Licence : MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg)](./LICENSE)
+[![Licence : CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](./LICENSE)
 
 Formation pratique **GitHub Actions et sécurité de la chaîne
 d'approvisionnement**, pilotée par la CLI
@@ -236,10 +236,17 @@ _1 lab, table générée par `scripts/gen_catalog.py`._
 - Contribuer : voir [CONTRIBUTING](./CONTRIBUTING.fr.md).
 - Conduite : [Code de conduite](./CODE_OF_CONDUCT.fr.md) · Sécurité : [SECURITY](./SECURITY.fr.md).
 - Corrections des leçons du blog relevées par les labs : [corrections-guides](./docs/corrections-guides.md).
-- Licence : [MIT](./LICENSE).
+- Licence : [CC BY 4.0](./LICENSE).
 
 ### Licence
 
-Copyright (c) 2024 Stéphane Robert, https://blog.stephane-robert.info
+Copyright (c) 2026 Stéphane Robert, https://blog.stephane-robert.info
 
-Ce dépôt est publié sous [licence MIT](./LICENSE).
+Ce catalogue est publié sous licence
+[Creative Commons Attribution 4.0 International (CC BY 4.0)](./LICENSE). Vous
+pouvez le partager et l'adapter, y compris commercialement, à une condition :
+créditer Stéphane Robert, lier le blog, et indiquer si vous avez modifié le
+contenu, sans laisser entendre que l'auteur approuve votre usage.
+
+Le fichier `LICENSE` ne contient que le texte officiel de la licence, sans
+en-tête ajouté : c'est ce qui permet à GitHub de la reconnaître.
