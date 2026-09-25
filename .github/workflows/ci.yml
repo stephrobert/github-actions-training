@@ -226,6 +226,15 @@ jobs:
       - name: Installer les dépendances du catalogue
         run: uv sync --frozen
 
+      # dsoxlab est un OUTIL, jamais une dépendance de ce dépôt : c'est la
+      # règle commune aux six catalogues. Il s'installe donc à part, et le
+      # valideur l'appelle par le PATH.
+      - name: Installer dsoxlab
+        run: |
+          set -euo pipefail
+          uv tool install dsoxlab
+          dsoxlab --version
+
       # Ce qui rend `validation-labs.json` opposable : un verdict local qui ne
       # se reproduit pas ici est ROUGE. Le validateur refuse de jouer avec une
       # autre version d'act que celle de `mise.toml`, et enregistre cette

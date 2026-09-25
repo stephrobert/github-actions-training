@@ -79,6 +79,16 @@ def commande(args: list[str], journal, timeout: int, entree: str | None = None,
     except subprocess.TimeoutExpired as e:
         journal.write(f"DÉLAI DÉPASSÉ après {timeout}s\n")
         raise Echec(f"délai de {timeout}s dépassé : {' '.join(args[:3])}") from e
+    except FileNotFoundError as e:
+        # Une trace Python de quinze lignes pour dire qu'un binaire manque
+        # n'apprend rien. Mesuré le 2026-09-25 : la CI a rendu
+        # `FileNotFoundError: 'dsoxlab'` sans dire comment l'installer.
+        journal.write(f"OUTIL ABSENT : {args[0]}\n")
+        raise Echec(
+            f"`{args[0]}` n'est pas sur le PATH. dsoxlab est un OUTIL, pas une "
+            "dépendance de ce dépôt : `uv tool install dsoxlab`, ou "
+            "`uvx dsoxlab` pour un essai."
+        ) from e
     journal.write(res.stdout)
     journal.write(res.stderr)
     return res
