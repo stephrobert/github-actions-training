@@ -1,0 +1,49 @@
+{
+ "fondations-premier-workflow": {
+  "act": "0.2.89",
+  "apres": {
+   "echecs": [],
+   "passed": 5,
+   "score": 100,
+   "total": 5
+  },
+  "avant": {
+   "echecs": [
+    "test_chaque_action_est_epinglee_sur_le_sha_de_son_commit",
+    "test_le_workflow_ne_reclame_que_la_lecture_du_code",
+    "test_les_tests_tournent_a_chaque_pull_request",
+    "test_les_tests_tournent_a_chaque_push",
+    "test_un_test_casse_fait_echouer_le_pipeline"
+   ],
+   "passed": 0,
+   "score": 0,
+   "total": 5
+  },
+  "date": "2026-09-25",
+  "duree_s": 13,
+  "ecarts": [],
+  "etapes": [
+   "état photographié, 14 conteneur(s) Docker présents",
+   "avant le travail : 0/5",
+   "après la solution : 5/5",
+   "après clean et run : 0/5",
+   "poste rendu intact"
+  ],
+  "image": "catthehacker/ubuntu:act-24.04@sha256:c58e2b364da03b0c804c7d660f2ecbedf2f221a382b9baa0b344b0144780ff43",
+  "journal": ".cache/dsoxlab/github-actions-training/validation-fondations-premier-workflow.log",
+  "raisons": [],
+  "rejeu": {
+   "echecs": [
+    "test_chaque_action_est_epinglee_sur_le_sha_de_son_commit",
+    "test_le_workflow_ne_reclame_que_la_lecture_du_code",
+    "test_les_tests_tournent_a_chaque_pull_request",
+    "test_les_tests_tournent_a_chaque_push",
+    "test_un_test_casse_fait_echouer_le_pipeline"
+   ],
+   "passed": 0,
+   "score": 0,
+   "total": 5
+  },
+  "verdict": "VALIDE"
+ }
+}

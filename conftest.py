@@ -69,7 +69,10 @@ IMAGE_RUNNER = (
 # l'apprenant (act en reçoit un neuf), les caches Python et pytest.
 EXCLUS_COPIE = (".git", ".venv", "__pycache__", ".pytest_cache", ".ruff_cache")
 
-_image_verifiee = False
+# Un ensemble plutôt qu'un booléen et un `global` : l'état vit dans un objet
+# mutable, que les fonctions modifient sans redéclarer le nom. Et le jour où
+# un lab emploiera une seconde image, la mémoire sera déjà par image.
+_images_verifiees: set[str] = set()
 
 
 # ── Où travaille l'apprenant (repris de terraform-training) ─────────────────
@@ -212,8 +215,7 @@ def initialiser_git(depot: Path) -> None:
 
 def image_prete() -> None:
     """L'image du runner est présente, sinon on la tire une fois, par digest."""
-    global _image_verifiee
-    if _image_verifiee:
+    if IMAGE_RUNNER in _images_verifiees:
         return
     if executer(["docker", "image", "inspect", IMAGE_RUNNER], timeout=60).returncode != 0:
         res = executer(["docker", "pull", IMAGE_RUNNER], timeout=900)
@@ -223,7 +225,7 @@ def image_prete() -> None:
                 f"{res.stderr.strip()[-400:]}. Docker doit répondre (`docker info`) ; "
                 "act ne joue rien sans lui."
             )
-    _image_verifiee = True
+    _images_verifiees.add(IMAGE_RUNNER)
 
 
 # ── act ──────────────────────────────────────────────────────────────────────

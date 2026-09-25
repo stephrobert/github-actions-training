@@ -18,6 +18,20 @@ package = false
 # réapprendre ce qui est accepté.
 target-version = "py312"
 
+# Ce que ruff ne touche JAMAIS, et pourquoi.
+#
+# `labs/*/fixtures/` est le point de départ que l'apprenant reçoit. Mesuré le
+# 2026-09-25 : `ruff --fix` y a trié les imports d'un fichier de tests livré,
+# c'est-à-dire modifié le sujet. Un lab pourra même livrer du Python fautif à
+# dessein, et le lint du catalogue n'a pas à le corriger.
+#
+# `challenge/work` est le répertoire de travail, jamais versionné : ce que
+# l'apprenant y écrit ne regarde pas le dépôt.
+exclude = [
+    "labs/*/fixtures",
+    "labs/*/challenge/work",
+]
+
 [tool.ruff.lint]
 select = [
     "E4", "E7", "E9", "F",

@@ -1,0 +1,253 @@
+# La CI d'un dépôt de CONTENU : un catalogue de labs, pas un paquet Python.
+#
+# Rien n'est construit, rien n'est publié. Ce qui est vérifié : que les
+# workflows du dépôt et ceux des solutions sont sains, que les hooks passent,
+# que le contrat du catalogue tient, et que les labs se jouent vraiment.
+#
+# ## Ce que cette CI ne passe JAMAIS sur les points de départ
+#
+# Un `labs/*/challenge/` peut porter une action non épinglée, `write-all` ou une
+# injection de template : c'est ce que l'apprenant doit corriger. zizmor et
+# actionlint y rendraient un échec permanent, et le seul moyen de les faire
+# taire serait de retirer du lab ce qui fait le lab. Les deux outils ne
+# regardent donc que `.github/` et `labs/**/solution/`, et c'est
+# `scripts/hooks/cibles-workflows.sh` qui calcule cette liste, une seule fois,
+# pour le hook local comme pour la CI.
+#
+# ## Durcissement
+#
+# Chaque action est épinglée sur un SHA complet avec sa version en commentaire,
+# le jeton par défaut n'a aucune permission, chaque job ne prend que ce qu'il
+# lui faut, checkout ne persiste jamais d'identifiants, et chaque job est borné
+# dans le temps. Ce dépôt enseigne cela : ses propres workflows le font.
+name: CI
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+
+# Refus par défaut : un job déclare ce dont il a besoin, rien ne s'hérite.
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Porte rapide : les jobs lourds n'ont pas à tourner si les workflows
+  # eux-mêmes sont fautifs.
+  zizmor:
+    name: Zizmor (analyse statique des workflows)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Durcir le runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+      # En ligne, et non `--offline` comme le hook local : avec un jeton,
+      # zizmor résout les tags en SHA et relève ce qu'il ne peut pas voir hors
+      # ligne. C'est la lecture la plus sévère des deux, et sa place est ici.
+      - name: Zizmor sur le dépôt et sur les solutions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mapfile -t cibles < <(bash scripts/hooks/cibles-workflows.sh)
+          printf 'cibles : %s\n' "${cibles[*]}"
+          uvx zizmor@1.30.1 --no-progress --persona regular "${cibles[@]}"
+
+  actionlint:
+    name: Actionlint (syntaxe des workflows)
+    needs: zizmor
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Durcir le runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Le binaire de la release épinglée, vérifié par son empreinte publiée
+      # avant d'être employé : aucun script distant tubé dans un shell.
+      - name: Installer actionlint
+        env:
+          ACTIONLINT_VERSION: "1.7.12"
+        run: |
+          set -euo pipefail
+          travail="$(mktemp -d)"
+          base="https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}"
+          archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -fsSL -o "${travail}/${archive}" "${base}/${archive}"
+          curl -fsSL -o "${travail}/checksums.txt" "${base}/actionlint_${ACTIONLINT_VERSION}_checksums.txt"
+          (cd "${travail}" && grep " ${archive}$" checksums.txt | sha256sum -c -)
+          tar -xzf "${travail}/${archive}" -C "${travail}" actionlint
+          sudo install -m 0755 "${travail}/actionlint" /usr/local/bin/actionlint
+          actionlint --version
+
+      - name: Actionlint sur le dépôt et sur les solutions
+        run: bash scripts/hooks/actionlint-cible.sh
+
+  poutine:
+    name: Poutine (chaînes d'exploitation CI/CD)
+    needs: zizmor
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Durcir le runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Analyse Poutine
+        uses: boostsecurityio/poutine-action@e240ebd3eff8b2db5a8e5f6b28f58739d7db2247 # v1.1.4
+
+  pre-commit:
+    name: Parité pre-commit (tous les hooks)
+    needs: zizmor
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Durcir le runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # trufflehog parcourt l'historique
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+      # mise pose act, actionlint et zizmor aux versions que `mise.toml`
+      # épingle, celles-là mêmes avec lesquelles les verdicts ont été rendus.
+      - name: Installer les outils épinglés
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          version: 2026.9.5
+          cache: true
+
+      - name: Installer trufflehog (binaire de release vérifié)
+        env:
+          TRUFFLEHOG_VERSION: "3.95.2"
+        run: |
+          set -euo pipefail
+          travail="$(mktemp -d)"
+          base="https://github.com/trufflesecurity/trufflehog/releases/download/v${TRUFFLEHOG_VERSION}"
+          archive="trufflehog_${TRUFFLEHOG_VERSION}_linux_amd64.tar.gz"
+          curl -fsSL -o "${travail}/${archive}" "${base}/${archive}"
+          curl -fsSL -o "${travail}/checksums.txt" "${base}/trufflehog_${TRUFFLEHOG_VERSION}_checksums.txt"
+          (cd "${travail}" && grep " ${archive}$" checksums.txt | sha256sum -c -)
+          tar -xzf "${travail}/${archive}" -C "${travail}" trufflehog
+          sudo install -m 0755 "${travail}/trufflehog" /usr/local/bin/trufflehog
+          trufflehog --version
+
+      - name: Installer les dépendances du catalogue
+        run: uv sync --frozen
+
+      - name: Tous les hooks, étape commit
+        run: uvx pre-commit@4.6.0 run --all-files --show-diff-on-failure --color always
+
+      - name: Tous les hooks, étape pre-push
+        run: uvx pre-commit@4.6.0 run --all-files --hook-stage pre-push --show-diff-on-failure --color always
+
+      # Un verrou qui a dérivé de son pyproject ne verrouille plus rien : les
+      # scanners de vulnérabilités continuent de lire `uv.lock`, qui ne décrit
+      # plus ce qui s'installe. `--check` ne résout pas et n'écrit pas.
+      - name: Le verrou décrit bien le pyproject
+        run: uv lock --check
+
+  labs:
+    name: Les labs se jouent vraiment (act)
+    needs: zizmor
+    runs-on: ubuntu-24.04
+    # Chaque lab tire l'image du runner et joue plusieurs workflows : c'est le
+    # job long du dépôt, et c'est le seul qui prouve quelque chose sur le
+    # contenu.
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Durcir le runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          # act tire son image et les actions des labs : une politique de
+          # sortie bloquante demanderait de lister le registre, l'API et le CDN
+          # de GitHub. `audit` enregistre sans couper, et le durcissement de ce
+          # job passe par sa permission en lecture seule.
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+      - name: Installer les outils épinglés
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          version: 2026.9.5
+          cache: true
+
+      - name: Installer les dépendances du catalogue
+        run: uv sync --frozen
+
+      # dsoxlab est un OUTIL, jamais une dépendance de ce dépôt : c'est la
+      # règle commune aux six catalogues. Il s'installe donc à part, et le
+      # valideur l'appelle par le PATH.
+      - name: Installer dsoxlab
+        run: |
+          set -euo pipefail
+          uv tool install dsoxlab
+          dsoxlab --version
+
+      # Ce qui rend `validation-labs.json` opposable : un verdict local qui ne
+      # se reproduit pas ici est ROUGE. Le validateur refuse de jouer avec une
+      # autre version d'act que celle de `mise.toml`, et enregistre cette
+      # version avec le digest de l'image du runner.
+      - name: Rejouer le cycle « 0 avant, 100 après »
+        run: mise exec -- uv run --no-sync scripts/valider-labs.py
+
+      # Le verdict versionné doit couvrir TOUT le catalogue : un lab ajouté
+      # sans validation fait échouer ce contrôle, même si tous les autres
+      # verdicts sont verts.
+      - name: Le verdict versionné couvre le catalogue et est vert
+        run: uv run --no-sync scripts/valider-labs.py --check
+
+      - name: Ce que la campagne a changé, s'il y a lieu
+        if: always()
+        run: git --no-pager diff --stat validation-labs.json
