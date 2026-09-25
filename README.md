@@ -1,72 +1,179 @@
-# GitHub Actions Training: verifiable labs
+# GitHub Actions DevSecOps Training: the course labs
 
 **Language:** [English](./README.md) · [Français](./README.fr.md)
 
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/stephrobert/github-actions-training?label=OpenSSF%20Scorecard)](https://securityscorecards.dev/viewer/?uri=github.com/stephrobert/github-actions-training)
-[![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg)](./LICENSE)
 
-A catalogue of **verifiable labs** for the
-[GitHub Actions training](https://blog.stephane-robert.info/docs/pipeline-cicd/github/parcours/)
-on Stéphane Robert's blog. Played by the
-[dsoxlab](https://github.com/stephrobert/dsoxlab) CLI.
+Hands-on training in **GitHub Actions and supply chain security**, driven by
+the [`dsoxlab`](https://github.com/stephrobert/dsoxlab) CLI. This repository is
+the **lab catalogue** of the GitHub Actions course on
+[blog.stephane-robert.info](https://blog.stephane-robert.info/docs/pipeline-cicd/github/parcours/),
+from the first workflow to self-hosted runners, with a systematic hardening
+angle.
 
-Reading a workflow does not prove you can write one. Each lab in this
-repository exercises **one skill of the course**, paired with the lesson that
-teaches it: it sets a starting point, states a goal, and checks the work by
-**actually running the workflow**, then reading what it produced. Never by
-re-reading the YAML you wrote.
+## What it is
 
-> **Status: being rebuilt (2026-09-25).** The catalogue is being redone from
-> scratch to follow the 12 modules of the course. No lab is validated yet; the
-> full plan is below, and every lab has its issue. The former
-> `tp-01-premier-workflow` exercise remains available on the `master` branch
-> until its replacement, `fondations-premier-workflow`, is ready.
+`github-actions-training` is a **content repository**, not an application. It
+provides:
 
-## Getting started
+- **labs**, each paired with a lesson of the course, from the first workflow
+  to CI governance,
+- **challenges** with no step-by-step, to check your autonomy,
+- **automatic validation** that **actually runs your workflows** and proves
+  what they produced (not that you wrote a given keyword),
+- **scoring** with hints of variable cost.
+
+The `dsoxlab` CLI is the single entry point: it starts a lab, shows the
+instructions, validates, scores and reports. It lives in **its own
+repository** and is installed **separately**: it is not part of this
+repository.
+
+> **Status: being rebuilt (2026-09-25).** The catalogue is being redone to
+> follow the 12 modules of the course. The full plan, one lab per skill, is
+> tracked in the [milestones](https://github.com/stephrobert/github-actions-training/milestones)
+> and [issues](https://github.com/stephrobert/github-actions-training/issues).
+
+## Requirements
+
+- Python 3.11+ and [`uv`](https://docs.astral.sh/uv/)
+- `git`
+- A responsive **Docker** (`docker info`): act runs each job in a container
+  that mimics GitHub's `ubuntu-24.04` runner.
+- [`mise`](https://mise.jdx.dev/), which installs act, actionlint, zizmor,
+  pinact, poutine and uv at the versions pinned in `mise.toml`.
+- For the **platform** labs only: a GitHub account, a repository of your own
+  and an authenticated `gh`.
+
+## Install
+
+`dsoxlab` is published on [PyPI](https://pypi.org/project/dsoxlab/): install
+it as a standalone tool.
 
 ```bash
-uv tool install dsoxlab        # the CLI, an external tool
+# 1. Install the dsoxlab CLI (external tool, outside this repository)
+uv tool install dsoxlab        # or: pipx install dsoxlab
 
+# 2. Clone this lab catalogue
 git clone https://github.com/stephrobert/github-actions-training.git
 cd github-actions-training
-mise install                   # act, actionlint, zizmor, pinact, poutine, uv
 
-dsoxlab list-labs
-dsoxlab run       fondations-premier-workflow
-dsoxlab challenge fondations-premier-workflow
-dsoxlab check     fondations-premier-workflow
+# 3. Install the pinned tooling (act, actionlint, zizmor, pinact, poutine, uv)
+mise install
+
+# 4. Check that everything is in place
+dsoxlab doctor
 ```
 
-`dsoxlab hint <id>` gives a hint, deducted from the score. `dsoxlab clean <id>`
-resets the lab.
+### Your first lab, in five minutes
 
-## Prerequisites
+**Start with the `fondations` section.** Its labs run entirely on your
+machine: act runs your workflows in Docker, without pushing anything to
+GitHub.
 
-- **A responsive Docker** (`docker info`). act runs each job in a container
-  that mimics GitHub's `ubuntu-24.04` runner.
-- **The tools in [`mise.toml`](mise.toml)**, installed by `mise install` at
-  the measured version: act 0.2.89, actionlint, zizmor, pinact, poutine, uv.
-  act must be 0.2.86 or later: earlier versions are vulnerable to
-  CVE-2026-34041 and CVE-2026-34042.
-- **For the "platform" labs only**: a GitHub account, a repository of your
-  own, and an authenticated `gh`. These labs read your repository, named by
-  `LAB_REPO=your-account/your-repo`.
+```bash
+dsoxlab use fondations                # starting section
+dsoxlab next                          # → fondations-premier-workflow
+```
 
-## How a lab is played
+Then, for this lab as for every other, the same four-step cycle:
 
-`dsoxlab run` copies the starting point into `labs/<id>/challenge/work`: a
-small application, sometimes a workflow to fix. You work in it as in a real
-repository. `dsoxlab check` then runs your workflows with **act**, on your
-machine, and checks what they did: jobs that succeeded or were skipped,
-outputs, artifacts, scanner findings.
+```bash
+dsoxlab course fondations-premier-workflow      # 1. the context, then the course
+dsoxlab challenge fondations-premier-workflow   # 2. what is asked of you
+dsoxlab run fondations-premier-workflow         # 3. prepares your workspace
+                                                #    (challenge/work/) and puts you there
+dsoxlab check fondations-premier-workflow       # 4. runs your workflows, validates and scores
+```
 
-Some things only exist on GitHub: protected environments and their approvals,
+`run` is the step people forget: it copies the starting point (a small
+application, sometimes a workflow to fix) into `challenge/work/`. A `check`
+run without `run` fails by reporting that nothing is done, which is true but
+misleading.
+
+Stuck? `dsoxlab hint <id>` reveals a hint, at the cost of a few points.
+
+### Moving on to "platform" labs
+
+Some features only exist on GitHub: protected environments and approvals,
 OIDC, attestations, rulesets, Scorecard, trigger filters. The labs about them
-are checked against **your repository**, through the GitHub API. The "act"
-column of the catalogue says, for each lab, what runs locally.
+are checked against **your repository**, through the GitHub API.
+
+```bash
+gh auth status                              # gh must be authenticated
+export LAB_REPO=your-account/your-repo      # the repository the lab reads
+dsoxlab check <id>
+```
+
+Check your environment with `dsoxlab doctor` (Python, pytest, runtimes,
+detected labs).
+
+### Keeping it up to date
+
+New labs arrive in this repository, and the CLI evolves on its own. Update each
+separately:
+
+```bash
+git pull                       # fetches new/updated labs into your clone
+mise install                   # aligns the tooling with the pinned versions
+uv tool upgrade dsoxlab        # updates the CLI (or: pipx upgrade dsoxlab)
+```
+
+Your work in progress lives in each lab's `challenge/work/`, which is
+gitignored: `git pull` therefore brings new labs without ever touching your
+work.
+
+## How it works
+
+### The declarative contract (two levels)
+
+The catalogue is described by data, not by code: the `dsoxlab` engine stays
+domain-agnostic and reads two levels of files.
+
+- **`meta.yml`** at the root declares the repository identity and the
+  **order** of the sections shown by `list-labs`. Each section is a module of
+  the blog course. There is no `infra` block: no machine to provision.
+- **`lab.yaml`** per lab (under `labs/<module>-<subject>/`) declares its
+  `skills`, its `level` (the course module), its `runtime` and `fixtures`, its
+  `doc_url` (the paired lesson) and a `validation` block. An optional
+  `lab.fr.yaml` overrides the `title` and `description` in French.
+
+`dsoxlab validate-structure` checks the whole contract: `meta.yml` is
+compliant, every referenced lab exists with a valid `lab.yaml`, and every
+referenced fixture or test file is present.
+
+### The lab lifecycle
+
+The learner drives everything through the CLI; a typical path:
+
+```bash
+dsoxlab doctor                        # check the environment (Python, pytest, runtimes, labs)
+dsoxlab list-labs                     # browse the catalogue
+dsoxlab show <id>                     # a lab's metadata and status
+dsoxlab run <id>                      # prepare the workspace
+dsoxlab course <id>                   # read the guided course (optional)
+dsoxlab challenge <id>                # read the mission (no step-by-step)
+dsoxlab hint <id>                     # reveal a hint (deducted from the score)
+dsoxlab check <id>                    # run the workflows, compute and score
+dsoxlab submit <id>                   # final submission, closes the session
+dsoxlab progress                      # progress per block, average score
+```
+
+`run` is what sets up the environment: it creates the lab's `workdir` and
+copies the declared fixtures. Everything then happens on your machine, in that
+directory, as in a real repository.
+
+### Runtimes
+
+| Runtime | Backend | What it brings |
+|---|---|---|
+| `shell` | local shell, act and Docker | Every lab. act replays your workflows in containers that mimic the `ubuntu-24.04` runner, on your machine, without pushing anything. |
+
+What act cannot run is checked against your GitHub repository. Measured on
+2026-09-25 with act 0.2.89 and Docker 29.1.3:
 
 | What the lab needs to run | Locally with act |
-| --- | --- |
+|---|---|
 | jobs, `needs`, `if`, outputs, matrices, reusable workflows, composite actions | yes |
 | cache, masked secrets, `vars`, an event payload | yes |
 | `branches:` and `paths:` filters of `on:` | no, on your repository |
@@ -74,135 +181,62 @@ column of the catalogue says, for each lab, what runs locally.
 | `upload-artifact` v6 and later | no: the labs pin v5.0.0 until [nektos/act#6174](https://github.com/nektos/act/pull/6174) is merged |
 | environments, approvals, OIDC, attestations, rulesets, Scorecard, `concurrency` | no, on your repository |
 
-Measured on 2026-09-25 with act 0.2.89 and Docker 29.1.3. The details, command
-by command, are in [`docs/conception.md`](docs/conception.md) (French).
+act must be 0.2.86 or later: earlier versions are vulnerable to CVE-2026-34041
+and CVE-2026-34042. The measurements are detailed in
+[`docs/conception.md`](./docs/conception.md) (French).
 
-## The catalogue
+### The validation model
+
+Validation **proves what your workflows do, it does not trust the learner**.
+Every lab ships `pytest` tests under `challenge/tests/` that **run your
+workflows with act** and check what they produced: the test job succeeded
+**and** fails when a test breaks, the secret went through **and** stays
+masked, the action is pinned **and** on the SHA of the announced tag. A test
+that only checks that a keyword appears in the YAML is rejected.
+
+- On the trainer side, `scripts/valider-labs.py` chains `dsoxlab run`, `check`
+  and `clean` to prove each lab **both ways**: 0 before the work, 100 after the
+  reference solution (`solution/`), and 0 again after a reset.
+- In `dsoxlab check` (the learner path), the tests validate **your** work, in
+  your `challenge/work/`.
+- The last test of a lab exercises **both sides**: what must be refused is
+  refused, what must pass passes.
+
+### Scoring, hints, progress
+
+`check` records a score (passed tests/total, minus the cost of the hints used).
+Hints have a **variable cost**: revealing one deducts points, hence their
+opt-in nature. The history lives in a SQLite database **specific to this
+repository** (`.dsoxlab.db`, at the root, gitignored); `dsoxlab scores` and
+`dsoxlab progress` read it. The active session is stored per repository in
+`.dsoxlab-context.json`.
+
+## Catalog
+
+The labs live under `labs/` and are ordered by `meta.yml`, one course module
+per section. The table below is generated from the actual `lab.yaml` files:
+run `python3 scripts/gen_catalog.py` to refresh it. Upcoming labs are tracked
+in the [milestones](https://github.com/stephrobert/github-actions-training/milestones).
 
 <!-- LABS:START -->
-
-This is the order of the [blog course](https://blog.stephane-robert.info/docs/pipeline-cicd/github/parcours/),
-as declared by [`meta.yml`](meta.yml). Each module of the course is a section,
-and each lab has an issue holding its definition of done. Lab names stay in
-French: they are the course's identifiers.
-
-**act**: "yes" when the whole proof runs locally, "partial" when only part of
-it does, "no" when it needs your GitHub repository.
-
 ### Writing your first workflow
 
-| Lab | What it proves | act | Tracking |
-| --- | --- | --- | --- |
-| `fondations-premier-workflow` | the tests run on every `push` and `pull_request`, and a broken test fails the pipeline | yes | [#16](https://github.com/stephrobert/github-actions-training/issues/16) |
-| `secrets-et-variables` | a secret goes through `env:` and stays masked, a derived value no longer is | yes | [#17](https://github.com/stephrobert/github-actions-training/issues/17) |
-| `evaluer-et-epingler-une-action` | every action on the SHA of the announced tag, and Dependabot to maintain them | partial | [#18](https://github.com/stephrobert/github-actions-training/issues/18) |
+| Lab (id) | Title | Level | Certif | Runtime | Companion guide |
+|---|---|---|---|---|---|
+| `fondations-premier-workflow` | First workflow: the tests run on every push, and a broken test turns the pipeline red | fondations | - | shell | [guide](https://blog.stephane-robert.info/docs/pipeline-cicd/github/fondations/workflow/) |
 
-### Designing dynamic workflows
-
-| Lab | What it proves | act | Tracking |
-| --- | --- | --- | --- |
-| `pipeline-en-graphe` | `needs`, job outputs, `if` on the event, a report that survives failure | yes | [#19](https://github.com/stephrobert/github-actions-training/issues/19) |
-| `matrice-de-tests` | Cartesian product, `include`, `exclude`, dynamic matrix through `fromJSON` | yes | [#20](https://github.com/stephrobert/github-actions-training/issues/20) |
-| `reutiliser` | a reusable workflow with inputs and outputs, a composite action | yes | [#21](https://github.com/stephrobert/github-actions-training/issues/21) |
-| `declencheurs` | `workflow_dispatch` with typed inputs, `github.event_name`, filters proven on the platform | partial | [#22](https://github.com/stephrobert/github-actions-training/issues/22) |
-| `services-conteneurs` | a job that waits for its service to be healthy | no | [#23](https://github.com/stephrobert/github-actions-training/issues/23) |
-
-### Defending the supply chain
-
-| Lab | What it proves | act | Tracking |
-| --- | --- | --- | --- |
-| `neutraliser-une-injection` | the payload of an issue title executes before, is printed as is after | yes | [#24](https://github.com/stephrobert/github-actions-training/issues/24) |
-| `epingler-et-maintenir` | a repository on moving tags moves to SHAs, Dependabot maintains them with a cooldown | partial | [#25](https://github.com/stephrobert/github-actions-training/issues/25) |
-| `auditer-avec-les-scanners` | a booby-trapped repository reaches 0 findings with zizmor, poutine and plumber, and its workflows still run | yes | [#26](https://github.com/stephrobert/github-actions-training/issues/26) |
-| `harden-runner-et-threat-model` | harden-runner blocking with an allowlist, and a versioned threat model | partial | [#27](https://github.com/stephrobert/github-actions-training/issues/27) |
-
-### Least privilege, OIDC and provenance
-
-| Lab | What it proves | act | Tracking |
-| --- | --- | --- | --- |
-| `permissions-minimales` | `permissions: {}` at the top, `write` only in the job that publishes | yes | [#28](https://github.com/stephrobert/github-actions-training/issues/28) |
-| `desamorcer-pull-request-target` | the two-workflow pattern, and the fork guard exercised with a fork payload | partial | [#29](https://github.com/stephrobert/github-actions-training/issues/29) |
-| `oidc-sans-cle-longue-duree` | no cloud key in the secrets, and a trust policy that refuses the wildcard | partial | [#30](https://github.com/stephrobert/github-actions-training/issues/30) |
-| `attester-et-verifier` | `gh attestation verify` and `cosign verify`, on a public image then on yours | no | [#31](https://github.com/stephrobert/github-actions-training/issues/31) |
-
-### A hardened GitHub pipeline, end to end
-
-Five workshops whose reference result is
-[`stephrobert/secure-python-pipeline`](https://github.com/stephrobert/secure-python-pipeline).
-This repository provides the starting point, the check and the solution.
-
-| Lab | What it proves | act | Tracking |
-| --- | --- | --- | --- |
-| `1-bootstrap-securise` | governance, hash-pinned dependencies, non-root image, zero HIGH or CRITICAL vulnerability | yes | [#32](https://github.com/stephrobert/github-actions-training/issues/32) |
-| `2-pipeline-ci-durci` | actionlint, zizmor, poutine and plumber at zero, and a CI that really tests | yes | [#33](https://github.com/stephrobert/github-actions-training/issues/33) |
-| `3-build-verifiable` | SLSA provenance, attested SBOM, Cosign signature, verified by a third party | no | [#34](https://github.com/stephrobert/github-actions-training/issues/34) |
-| `4-protection-et-gouvernance` | a ruleset read back through the API, CODEOWNERS without errors | no | [#35](https://github.com/stephrobert/github-actions-training/issues/35) |
-| `5-scoring-et-durcissement` | Scorecard taken apart check by check | no | [#36](https://github.com/stephrobert/github-actions-training/issues/36) |
-
-### Delivering: environments and deployments
-
-| Lab | What it proves | act | Tracking |
-| --- | --- | --- | --- |
-| `promouvoir-un-deploiement-approuve` | two environments, an approval, promotion by digest, rollback without rebuild | no | [#37](https://github.com/stephrobert/github-actions-training/issues/37) |
-
-### Speeding up and debugging the pipelines
-
-| Lab | What it proves | act | Tracking |
-| --- | --- | --- | --- |
-| `artefacts-entre-jobs` | a build shared through an artifact, a report produced even on failure | yes | [#38](https://github.com/stephrobert/github-actions-training/issues/38) |
-| `cache-des-dependances` | the cache hit on the second run, invalidated when the lockfile changes | yes | [#39](https://github.com/stephrobert/github-actions-training/issues/39) |
-| `debug-d-un-workflow` | a workflow failing for three distinct reasons, diagnosed then fixed | yes | [#40](https://github.com/stephrobert/github-actions-training/issues/40) |
-| `concurrency` | obsolete runs cancelled, and a deployment that is never cancelled | no | [#41](https://github.com/stephrobert/github-actions-training/issues/41) |
-
-### Choosing and securing the runners
-
-| Lab | What it proves | act | Tracking |
-| --- | --- | --- | --- |
-| `runner-ephemere-en-conteneur` | a non-root runner image, registered as ephemeral, gone after one job | no | [#42](https://github.com/stephrobert/github-actions-training/issues/42) |
-| `securiser-un-runner` | cleanup between jobs, dedicated account, filtered outbound network | partial | [#43](https://github.com/stephrobert/github-actions-training/issues/43) |
-
-### Governing CI beyond the YAML
-
-| Lab | What it proves | act | Tracking |
-| --- | --- | --- | --- |
-| `rulesets-et-codeowners` | an active ruleset, CODEOWNERS without errors, a PR blocked without review | no | [#44](https://github.com/stephrobert/github-actions-training/issues/44) |
-| `actions-autorisees` | the actions policy set through the API, and a workflow outside the list refused | no | [#45](https://github.com/stephrobert/github-actions-training/issues/45) |
-
-### Command-line tooling
-
-| Lab | What it proves | act | Tracking |
-| --- | --- | --- | --- |
-| `actionlint-corriger-des-workflows` | three faulty workflows made clean, a configuration for custom labels | yes | [#46](https://github.com/stephrobert/github-actions-training/issues/46) |
-| `act-rejouer-en-local` | a workflow replayed with an event, inputs, secrets and a filtered matrix | yes | [#47](https://github.com/stephrobert/github-actions-training/issues/47) |
-| `gh-piloter-les-runs` | trigger, follow to the verdict, rerun only the failed jobs | no | [#48](https://github.com/stephrobert/github-actions-training/issues/48) |
-
-Total: **33 labs planned, 0 validated.** A lab is validated only once played
-both ways: 0 before the work, 100 after the reference solution, and 0 again
-after a reset.
-
+_1 lab, table generated by `scripts/gen_catalog.py`._
 <!-- LABS:END -->
 
-## Contributing
+## Contributing & license
 
-The rules for writing a lab, the testing doctrine and the conventions live in
-[`CONTRIBUTING.md`](CONTRIBUTING.md). The catalogue foundation is tracked in
-issues [#11 to #15](https://github.com/stephrobert/github-actions-training/milestones).
+- Contributing: see [CONTRIBUTING](./CONTRIBUTING.md).
+- Conduct: [Code of Conduct](./CODE_OF_CONDUCT.md) · Security: [SECURITY](./SECURITY.md).
+- Corrections to the blog lessons found by the labs: [corrections-guides](./docs/corrections-guides.md) (French).
+- License: [MIT](./LICENSE).
 
-## What the labs correct in the lessons
-
-Every lab is paired with a lesson of the blog, and writing it means running
-what the lesson claims. A full read of the course already found **23 findings
-across 9 lessons**, 7 of them false statements, recorded with their evidence
-in [`docs/corrections-guides.md`](docs/corrections-guides.md) (French). For
-instance, the act lesson installed a vulnerable version, and the first
-workflow of the course contained the template injection that the next lesson
-forbids.
-
-The training teaches, this catalogue proves: what it contradicts goes back to
-the blog.
-
-## License
+### License
 
 Copyright (c) 2024 Stéphane Robert, https://blog.stephane-robert.info
 
-This repository is released under the [MIT license](LICENSE).
+This repository is released under the [MIT license](./LICENSE).
