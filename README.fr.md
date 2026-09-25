@@ -236,6 +236,9 @@ _1 lab, table générée par `scripts/gen_catalog.py`._
 
 - Contribuer : voir [CONTRIBUTING](./CONTRIBUTING.fr.md).
 - Conduite : [Code de conduite](./CODE_OF_CONDUCT.fr.md) · Sécurité : [SECURITY](./SECURITY.fr.md).
+- Ce qui a changé, et quand : [CHANGELOG](./CHANGELOG.fr.md). Il est daté et non
+  versionné : ce projet n'a ni tag ni release, et ce qui compte pour un lab est
+  le jour où il a été éprouvé, avec quelle version d'act.
 - Corrections des leçons du blog relevées par les labs : [corrections-guides](./docs/corrections-guides.md).
 - Licence : [CC BY 4.0](./LICENSE).
 
