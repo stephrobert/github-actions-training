@@ -2,6 +2,7 @@
 
 **Language:** [English](./README.md) · [Français](./README.fr.md)
 
+[![CI](https://github.com/stephrobert/github-actions-training/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/stephrobert/github-actions-training/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/stephrobert/github-actions-training?label=OpenSSF%20Scorecard)](https://securityscorecards.dev/viewer/?uri=github.com/stephrobert/github-actions-training)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](./LICENSE)
 
