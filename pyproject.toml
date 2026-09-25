@@ -35,16 +35,17 @@ ignore = [
 ]
 
 [tool.pytest.ini_options]
-# Tous les labs nomment leur test `tests/test_functional.py` : le mode
-# d'import « prepend » les prendrait pour un seul module. importlib les isole
-# par leur chemin.
+# Le contrat dsoxlab impose que chaque lab nomme son test
+# challenge/tests/test_functional.py. Tous ces fichiers partagent le même
+# basename dans des répertoires sans __init__.py : le mode d'import « prepend »
+# les prendrait pour un seul module. importlib les isole par leur chemin.
 addopts = "--import-mode=importlib -p no:cacheprovider"
 
-# Ne collecter QUE les tests des labs (labs/<module>/<id>/tests/) et ceux du
-# catalogue (tests/). Le point de départ d'un lab (`challenge/`) porte souvent
-# ses propres tests, ceux de l'application à intégrer : ils tournent DANS le
-# workflow, sous act, jamais ici.
-testpaths = ["labs", "tests"]
+# Ne collecter QUE les tests des challenges. Le point de départ d'un lab
+# (`fixtures/`, copié dans `challenge/work`) porte souvent ses propres tests,
+# ceux de l'application à intégrer : ils tournent DANS le workflow, sous act,
+# jamais ici. Les tests du catalogue (tests/) se lancent explicitement.
+testpaths = ["labs"]
 norecursedirs = [
-    "challenge", "solution", ".git", ".venv", "work", "__pycache__",
+    "fixtures", "work", "solution", ".git", ".venv", "__pycache__",
 ]

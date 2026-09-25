@@ -1,0 +1,45 @@
+# Traduction française du meta.yml voisin.
+#
+# dsoxlab n'y lit que repo.title, repo.description, sections[].title et
+# sections[].description. Les sections sont appariées par `id`, jamais par
+# position : réordonner meta.yml ne casse donc pas la traduction.
+
+repo:
+  title: "Formation GitHub Actions : les labs vérifiables"
+  description: |
+    Un lab par compétence du parcours GitHub Actions du blog. Chaque lab a un
+    point de départ, une vérification qui joue réellement le workflow avec
+    act, une solution de référence, et a été éprouvé dans les deux sens :
+    0 avant le travail, 100 après.
+
+sections:
+  - id: fondations
+    title: "Écrire son premier workflow"
+    description: "Ce qu'est un workflow, où ranger secrets et variables de configuration, et comment évaluer une action de la Marketplace avant de l'adopter."
+  - id: workflows
+    title: "Concevoir des workflows dynamiques"
+    description: "Graphe de jobs, outputs, conditions, matrices, workflows réutilisables et actions composites."
+  - id: securite
+    title: "Défendre la chaîne d'approvisionnement"
+    description: "Injection de template, épinglage et maintenance des SHA, audit avec zizmor, poutine et plumber, harden-runner."
+  - id: securite-permissions
+    title: "Droits minimaux, OIDC et provenance"
+    description: "Permissions minimales du GITHUB_TOKEN, le piège pull_request_target, OIDC sans clé longue durée, attestations."
+  - id: securite-lab
+    title: "Un pipeline GitHub durci de bout en bout"
+    description: "Cinq ateliers dont le résultat de référence est stephrobert/secure-python-pipeline."
+  - id: deployer
+    title: "Livrer : environnements et déploiements"
+    description: "Environnements nommés, approbations, promotion par digest, rollback sans rebuild."
+  - id: optimiser
+    title: "Accélérer et déboguer les pipelines"
+    description: "Artefacts entre jobs, cache des dépendances, diagnostic d'un workflow en échec, concurrency."
+  - id: runners
+    title: "Choisir et sécuriser les runners"
+    description: "Runners éphémères en conteneur, durcissement d'un parc auto-hébergé."
+  - id: gouvernance
+    title: "Gouverner la CI au-delà du YAML"
+    description: "Rulesets, CODEOWNERS, politique d'actions autorisées."
+  - id: outils
+    title: "L'outillage en ligne de commande"
+    description: "actionlint, act et gh, pilotés depuis le terminal."
