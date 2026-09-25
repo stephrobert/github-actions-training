@@ -94,15 +94,24 @@ labs/<module>/<id>/
 parcours ; `tests/test_meta_declare_les_labs.py` refuse un lab présent sur le
 disque et absent de `meta.yml`, ou l'inverse.
 
-L'apprenant joue ainsi :
+L'apprenant joue par **dsoxlab, et rien d'autre** : le catalogue ne porte ni
+vérificateur, ni gestion des indices, ni calcul de score. Une première version
+de cette conception prévoyait `scripts/verifier-lab.py` et `scripts/indice.py` ;
+Stéphane l'a refusée le 2026-09-25, dsoxlab étant le moteur de tous ses
+catalogues. Ce qu'il ne sait pas faire devient une issue dans
+`stephrobert/dsoxlab`.
 
 ```bash
 mise install                                   # act, actionlint, zizmor, pinact, uv
-cd labs/fondations/premier-workflow/challenge  # lire scenario.md d'abord
-# ... le travail ...
-python3 ../../../../scripts/verifier-lab.py fondations-premier-workflow
-python3 ../../../../scripts/indice.py fondations-premier-workflow 1
+dsoxlab run       fondations-premier-workflow  # fixtures copiées dans challenge/work
+dsoxlab challenge fondations-premier-workflow  # la mission
+# ... le travail, dans labs/fondations-premier-workflow/challenge/work ...
+dsoxlab hint      fondations-premier-workflow  # un indice, déduit du score
+dsoxlab check     fondations-premier-workflow  # les tests jouent le workflow avec act
 ```
+
+Les labs sont à plat sous `labs/<module>-<sujet>/`, comme dans les catalogues
+frères, et non sous `labs/<module>/<sujet>/`.
 
 ## Le sort de `tp-01-premier-workflow`
 

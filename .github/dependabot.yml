@@ -23,7 +23,7 @@ updates:
 
   # Mise à jour des dépendances pip (Python)
   - package-ecosystem: "pip"
-    directory: "/tp-01-premier-workflow/challenge"
+    directory: "/labs/fondations-premier-workflow/fixtures"
     schedule:
       interval: "weekly"
       day: "monday"

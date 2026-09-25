@@ -17,3 +17,7 @@ __pycache__/
 # Les solutions de référence SONT versionnées : c'est ce que le validateur pose
 # par-dessus chaque point de départ. L'ancienne règle `**/solution/` masquait
 # ce que le dépôt publiait déjà.
+
+# État local de dsoxlab, propre à chaque poste.
+.dsoxlab.db
+.dsoxlab-context.json
