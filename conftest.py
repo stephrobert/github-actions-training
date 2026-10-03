@@ -306,8 +306,12 @@ def jouer_act(
     with copie_temporaire(depot) as d:
         initialiser_git(d)
         aux = d.parent
+        # --rm : sans lui, act garde le conteneur de tout job en ÉCHEC. Les
+        # copies piégées échouent exprès : chaque `dsoxlab check` laisserait
+        # ses conteneurs act derrière lui (mesuré le 2026-10-03 sur le
+        # catalogue DevSecOps, qui partage ce harnais).
         cmd = [
-            "act", evenement, "--json", "--pull=false",
+            "act", evenement, "--json", "--pull=false", "--rm",
             "-P", f"{LABEL_RUNNER}={IMAGE_RUNNER}",
             "--artifact-server-path", str(aux / "artefacts"),
             "--cache-server-path", str(aux / "cache"),

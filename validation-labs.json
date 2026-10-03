@@ -19,11 +19,11 @@
    "score": 0,
    "total": 5
   },
-  "date": "2026-09-25",
-  "duree_s": 13,
+  "date": "2026-10-03",
+  "duree_s": 15,
   "ecarts": [],
   "etapes": [
-   "état photographié, 14 conteneur(s) Docker présents",
+   "état photographié, 26 conteneur(s) Docker présents",
    "avant le travail : 0/5",
    "après la solution : 5/5",
    "après clean et run : 0/5",
