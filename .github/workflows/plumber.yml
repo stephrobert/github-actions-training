@@ -1,0 +1,81 @@
+# Validates this catalogue's own CI/CD with Plumber (getplumber.io): it analyzes the
+# repo's GitHub Actions workflows and repository settings against .plumber.yaml,
+# uploads findings to Code Scanning, publishes the compliance score to the
+# README badge, and fails below the threshold. The action verifies the
+# downloaded Plumber binary's SLSA build-provenance attestation before running.
+#
+# This workflow runs ONLY in trusted contexts (push to main, schedule, manual):
+# it needs a privileged token (Administration:read) to verify branch protection,
+# and that secret must never be exposed to pull_request runs - especially from
+# forks. Pull requests are gated for workflow security by zizmor in ci.yml,
+# which uses no secrets.
+name: Plumber compliance
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '30 2 * * 1'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plumber:
+    name: Plumber analyze
+    # Skips while private (SARIF upload needs Advanced Security, free on public
+    # repos); activates automatically once the repo is public.
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # The privileged token lives in this protected environment, which is
+    # restricted to the main branch - it is unreachable from pull_request runs.
+    environment: security
+    permissions:
+      contents: read
+      security-events: write   # upload SARIF to Code Scanning
+      actions: read            # read the workflow run for Plumber status
+      id-token: write          # OIDC to publish the score to score.getplumber.io
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@351661ca32ac09a36dc5ee2d536e3128f2a3c8ed # v2.22.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Plumber compliance scan
+        uses: getplumber/plumber@fb943e4efba61cf7b0a0c56f6648710a7453519b # v0.5.20
+        with:
+          version: "v0.4.3"
+          verify-attestation: "true"   # check the binary's SLSA provenance before running
+          # Gate on the Plumber Score itself. `threshold` is DEPRECATED and its
+          # value 100 is explicitly "treated as unset" by the action - it gated
+          # nothing. min-points + soft-fail:false is the real gate: the job only
+          # passes at a full 100/100, and any finding fails it.
+          min-points: "100"
+          soft-fail: "false"
+          upload-sarif: "true"          # findings to the Security tab (internal)
+          upload-artifacts: "false"     # no downloadable artifact published
+          score-push: "true"           # publish the score (drives the README badge)
+          # Fine-grained PAT (Administration + Contents + Metadata = Read),
+          # stored as an environment secret in the protected `security`
+          # environment, so branchMustBeProtected is verified for real.
+          #
+          # The token does TWO things, and a first attempt missed the second:
+          # besides the branch-protection check, the action uses it to verify
+          # the provenance attestation of the binary it has just downloaded,
+          # through `gh attestation verify`. Measured here on 2026-09-25, and on
+          # the Kubernetes catalogue on 2026-09-15: an empty token fails that
+          # step with `exit 4` on "set the GH_TOKEN environment variable", and
+          # the whole job falls over before analysing anything. Hence the
+          # fallback to the job token: with no PAT, provenance is still verified
+          # and only the branch-protection check abstains.
+          github-token: ${{ secrets.PLUMBER_ADMIN_TOKEN || github.token }}
