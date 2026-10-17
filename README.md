@@ -1,370 +1,254 @@
-# TP GitHub Actions pour Dev & Ops
+# GitHub Actions DevSecOps Training: the course labs
 
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/stephrobert/github-actions-training/badge)](https://scorecard.dev/viewer/?uri=github.com/stephrobert/github-actions-training)
-[![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)
+**Language:** [English](./README.md) · [Français](./README.fr.md)
 
-Bienvenue dans ce projet de **Travaux Pratiques GitHub Actions** !
+[![CI](https://github.com/stephrobert/github-actions-training/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/stephrobert/github-actions-training/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/stephrobert/github-actions-training?label=OpenSSF%20Scorecard)](https://securityscorecards.dev/viewer/?uri=github.com/stephrobert/github-actions-training)
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](./LICENSE)
 
-Ces TP vous guideront dans l'apprentissage pratique de **GitHub Actions** pour
-l'automatisation CI/CD. Chaque TP est organisé dans un **sous-dossier** avec son
-propre énoncé et des tests de validation. Au début, les explications seront
-détaillées, mais très vite, vous serez plus autonome.
+Hands-on training in **GitHub Actions and supply chain security**, driven by
+the [`dsoxlab`](https://github.com/stephrobert/dsoxlab) CLI. This repository is
+the **lab catalogue** of the GitHub Actions course on
+[blog.stephane-robert.info](https://blog.stephane-robert.info/docs/pipeline-cicd/github/parcours/),
+from the first workflow to self-hosted runners, with a systematic hardening
+angle.
 
-## Pré-requis
+## What it is
 
-### Compte GitHub
+`github-actions-training` is a **content repository**, not an application. It
+provides:
 
-- Un compte **GitHub** (gratuit suffit pour commencer)
-- Un dépôt de test (fork de ce projet ou nouveau dépôt)
-- **GitHub CLI** installé (optionnel mais recommandé)
+- **labs**, each paired with a lesson of the course, from the first workflow
+  to CI governance,
+- **challenges** with no step-by-step, to check your autonomy,
+- **automatic validation** that **actually runs your workflows** and proves
+  what they produced (not that you wrote a given keyword),
+- **scoring** with hints of variable cost.
 
-### Environnement local
+The `dsoxlab` CLI is the single entry point: it starts a lab, shows the
+instructions, validates, scores and reports. It lives in **its own
+repository** and is installed **separately**: it is not part of this
+repository.
 
-- **Git** installé et configuré
-- Un éditeur de code (VS Code recommandé avec l'extension GitHub Actions)
-- **act** pour tester les workflows localement
-- **actionlint** pour valider la syntaxe des workflows
+> **Status: being rebuilt (2026-09-25).** The catalogue is being redone to
+> follow the 12 modules of the course. The full plan, one lab per skill, is
+> tracked in the [milestones](https://github.com/stephrobert/github-actions-training/milestones)
+> and [issues](https://github.com/stephrobert/github-actions-training/issues).
 
-- [**Installation de Git**](https://blog.stephane-robert.info/docs/developper/version/git/)
-- [**Installation de Docker**](https://blog.stephane-robert.info/docs/conteneurs/moteurs-conteneurs/docker/)
-- [**Installation de GitHub CLI**](https://blog.stephane-robert.info/docs/pipeline-cicd/github/gh-cli/)
-- [**Installation de act**](https://blog.stephane-robert.info/docs/pipeline-cicd/github/act/)
-- [**Installation de actionlint**](https://blog.stephane-robert.info/docs/pipeline-cicd/github/actionlint/)
+## Requirements
 
-**Vérifications rapides :**
+- Python 3.11+ and [`uv`](https://docs.astral.sh/uv/)
+- `git`
+- A responsive **Docker** (`docker info`): act runs each job in a container
+  that mimics GitHub's `ubuntu-24.04` runner.
+- [`mise`](https://mise.jdx.dev/), which installs act, actionlint, zizmor,
+  pinact, poutine and uv at the versions pinned in `mise.toml`.
+- For the **platform** labs only: a GitHub account, a repository of your own
+  and an authenticated `gh`.
 
-```bash
-docker --version
-git --version
-gh --version
-act --version
-actionlint --version
-```
+## Install
 
-## Documentation obligatoire
-
-Avant de commencer un TP, vous devez **lire la documentation** liée au sujet sur
-[mon site de documentation](https://blog.stephane-robert.info/docs/pipeline-cicd/github/).
-
-Chaque énoncé précisera quelle section lire.
-**Aucune aide ne sera donnée sur des notions qui y sont expliquées.**
-
-**Lectures recommandées :**
-
-- [Tout savoir sur GitHub Actions CI/CD](https://blog.stephane-robert.info/docs/pipeline-cicd/github/)
-- [Sécurité GitHub Actions](https://blog.stephane-robert.info/docs/pipeline-cicd/github/securite/)
-- [Documentation officielle GitHub Actions](https://docs.github.com/en/actions)
-
-## Structure du projet
-
-Chaque TP est placé dans un **sous-dossier** indépendant :
+`dsoxlab` is published on [PyPI](https://pypi.org/project/dsoxlab/): install
+it as a standalone tool.
 
 ```bash
-/github-actions-training/
-│
-├── tp-01-premier-workflow/        # Créer son premier workflow
-├── tp-02-events-triggers/         # Événements et déclencheurs
-├── tp-03-contexts-expressions/    # Contexts et expressions
-├── tp-04-variables-secrets/       # Variables et secrets
-├── tp-05-matrix-strategy/         # Stratégies de matrix
-├── tp-06-conditions-if/           # Conditions et contrôle de flux
-├── tp-07-cache-artifacts/         # Cache et artifacts
-├── tp-08-reusable-workflows/      # Workflows réutilisables
-├── tp-09-composite-actions/       # Actions composites
-├── tp-10-self-hosted-runners/     # Runners self-hosted
-├── tp-11-securite-permissions/    # Sécurité et permissions
-├── tp-12-oidc-cloud/              # OIDC et déploiements cloud
-├── tp-13-attestations-slsa/       # Attestations et provenance SLSA
-└── tp-14-projet-final/            # Projet de synthèse
+# 1. Install the dsoxlab CLI (external tool, outside this repository)
+uv tool install dsoxlab        # or: pipx install dsoxlab
+
+# 2. Clone this lab catalogue
+git clone https://github.com/stephrobert/github-actions-training.git
+cd github-actions-training
+
+# 3. Install the pinned tooling (act, actionlint, zizmor, pinact, poutine, uv)
+mise install
+
+# 4. Check that everything is in place
+dsoxlab doctor
 ```
 
-## Parcours d'apprentissage
+### Your first lab, in five minutes
 
-### 🟢 Niveau Débutant (TP 01-04)
-
-Objectif : comprendre les bases de GitHub Actions
-
-| TP | Sujet | Durée estimée |
-|----|-------|---------------|
-| 01 | Premier workflow | 30 min |
-| 02 | Events et triggers | 45 min |
-| 03 | Contexts et expressions | 1h |
-| 04 | Variables et secrets | 45 min |
-
-### 🟡 Niveau Intermédiaire (TP 05-09)
-
-Objectif : maîtriser les patterns avancés
-
-| TP | Sujet | Durée estimée |
-|----|-------|---------------|
-| 05 | Matrix strategy | 1h |
-| 06 | Conditions et if | 45 min |
-| 07 | Cache et artifacts | 1h |
-| 08 | Reusable workflows | 1h30 |
-| 09 | Composite actions | 1h |
-
-### 🔴 Niveau Avancé (TP 10-14)
-
-Objectif : sécuriser et industrialiser
-
-| TP | Sujet | Durée estimée |
-|----|-------|---------------|
-| 10 | Self-hosted runners | 1h30 |
-| 11 | Sécurité et permissions | 1h30 |
-| 12 | OIDC et cloud | 1h30 |
-| 13 | Attestations et SLSA | 2h |
-| 14 | Projet final | 3h |
-
-## Validation des exercices
-
-Chaque TP contient :
-
-1. **Un README.md** avec l'énoncé et les tutoriels
-2. **Un dossier `challenge/`** avec un exercice à réaliser
-3. **Des tests automatisés** pour valider votre travail
-
-Pour valider un challenge :
+**Start with the `fondations` section.** Its labs run entirely on your
+machine: act runs your workflows in Docker, without pushing anything to
+GitHub.
 
 ```bash
-cd tp-XX-xxx/challenge
-# Suivre les instructions du README.md
-...
-...
-# Puis exécuter les tests
-./validate.sh
+dsoxlab use fondations                # starting section
+dsoxlab next                          # → fondations-premier-workflow
 ```
 
-## Conseils pour réussir
-
-1. **Lisez la doc avant de coder** : chaque TP indique les sections à lire
-2. **Testez localement avec `act`** : plus rapide que de pousser à chaque fois
-3. **Validez vos workflows avec `actionlint`** : détecte les erreurs avant le push
-4. **Utilisez les logs** : `ACTIONS_RUNNER_DEBUG=true` pour le debug
-5. **Commitez souvent** : un commit = une étape fonctionnelle
-6. **Sécurité d'abord** : ne jamais commiter de secrets !
-
-## Outils de développement local
-
-Cette section détaille les outils pour travailler efficacement sur vos workflows
-**sans avoir à pousser sur GitHub à chaque modification**.
-
-### actionlint — Valider la syntaxe des workflows
-
-[actionlint](https://github.com/rhysd/actionlint) est un linter qui détecte les
-erreurs de syntaxe, les problèmes de sécurité et les mauvaises pratiques dans
-vos fichiers workflow.
-
-**Utilisation :**
+Then, for this lab as for every other, the same four-step cycle:
 
 ```bash
-# Valider tous les workflows du projet
-actionlint
-
-# Valider un workflow spécifique
-actionlint .github/workflows/ci.yml
-
-# Afficher les erreurs au format JSON (pour intégration CI)
-actionlint -format json
+dsoxlab course fondations-premier-workflow      # 1. the context, then the course
+dsoxlab challenge fondations-premier-workflow   # 2. what is asked of you
+dsoxlab run fondations-premier-workflow         # 3. prepares your workspace
+                                                #    (challenge/work/) and puts you there
+dsoxlab check fondations-premier-workflow       # 4. runs your workflows, validates and scores
 ```
 
-**Exemple de sortie :**
+`run` is the step people forget: it copies the starting point (a small
+application, sometimes a workflow to fix) into `challenge/work/`. A `check`
+run without `run` fails by reporting that nothing is done, which is true but
+misleading.
 
-```
-.github/workflows/ci.yml:15:9: property "runs-on" is required
-.github/workflows/ci.yml:23:17: "actions/checkout@v3" should be pinned by SHA
-```
+Stuck? `dsoxlab hint <id>` reveals a hint, at the cost of a few points.
 
-**Intégration VS Code :**
-Installez l'extension [actionlint](https://marketplace.visualstudio.com/items?itemName=arahata.linter-actionlint)
-pour voir les erreurs directement dans l'éditeur.
+### Moving on to "platform" labs
 
-**Ce que actionlint détecte :**
-
-| Type d'erreur | Exemple |
-|---------------|---------|
-| Syntaxe YAML invalide | Indentation incorrecte, caractères spéciaux |
-| Propriétés manquantes | `runs-on` oublié dans un job |
-| Expressions invalides | `${{ secrets.TOKEN }` (accolade manquante) |
-| Actions non épinglées | `uses: actions/checkout@v4` (recommande SHA) |
-| Permissions trop larges | `permissions: write-all` |
-| Shells non supportés | `shell: zsh` sur un runner ubuntu |
-
-### Vérifier le code Python avant de créer le workflow
-
-Avant de créer votre workflow CI, assurez-vous que le code Python fonctionne
-localement. Voici la procédure complète :
-
-**1. Se placer dans le dossier du challenge :**
+Some features only exist on GitHub: protected environments and approvals,
+OIDC, attestations, rulesets, Scorecard, trigger filters. The labs about them
+are checked against **your repository**, through the GitHub API.
 
 ```bash
-cd tp-01-premier-workflow/challenge
+gh auth status                              # gh must be authenticated
+export LAB_REPO=your-account/your-repo      # the repository the lab reads
+dsoxlab check <id>
 ```
 
-**2. Créer un environnement virtuel (recommandé) :**
+Check your environment with `dsoxlab doctor` (Python, pytest, runtimes,
+detected labs).
+
+### Keeping it up to date
+
+New labs arrive in this repository, and the CLI evolves on its own. Update each
+separately:
 
 ```bash
-# Créer l'environnement
-python3 -m venv .venv
-
-# Activer l'environnement
-source .venv/bin/activate  # Linux/macOS
-# ou
-.venv\Scripts\activate     # Windows
+git pull                       # fetches new/updated labs into your clone
+mise install                   # aligns the tooling with the pinned versions
+uv tool upgrade dsoxlab        # updates the CLI (or: pipx upgrade dsoxlab)
 ```
 
-**3. Installer les dépendances :**
+Your work in progress lives in each lab's `challenge/work/`, which is
+gitignored: `git pull` therefore brings new labs without ever touching your
+work.
+
+## How it works
+
+### The declarative contract (two levels)
+
+The catalogue is described by data, not by code: the `dsoxlab` engine stays
+domain-agnostic and reads two levels of files.
+
+- **`meta.yml`** at the root declares the repository identity and the
+  **order** of the sections shown by `list-labs`. Each section is a module of
+  the blog course. There is no `infra` block: no machine to provision.
+- **`lab.yaml`** per lab (under `labs/<module>-<subject>/`) declares its
+  `skills`, its `level` (the course module), its `runtime` and `fixtures`, its
+  `doc_url` (the paired lesson) and a `validation` block. An optional
+  `lab.fr.yaml` overrides the `title` and `description` in French.
+
+`dsoxlab validate-structure` checks the whole contract: `meta.yml` is
+compliant, every referenced lab exists with a valid `lab.yaml`, and every
+referenced fixture or test file is present.
+
+### The lab lifecycle
+
+The learner drives everything through the CLI; a typical path:
 
 ```bash
-pip install -r requirements.txt
+dsoxlab doctor                        # check the environment (Python, pytest, runtimes, labs)
+dsoxlab list-labs                     # browse the catalogue
+dsoxlab show <id>                     # a lab's metadata and status
+dsoxlab run <id>                      # prepare the workspace
+dsoxlab course <id>                   # read the guided course (optional)
+dsoxlab challenge <id>                # read the mission (no step-by-step)
+dsoxlab hint <id>                     # reveal a hint (deducted from the score)
+dsoxlab check <id>                    # run the workflows, compute and score
+dsoxlab submit <id>                   # final submission, closes the session
+dsoxlab progress                      # progress per block, average score
 ```
 
-**4. Vérifier la syntaxe Python (sans exécuter) :**
+`run` is what sets up the environment: it creates the lab's `workdir` and
+copies the declared fixtures. Everything then happens on your machine, in that
+directory, as in a real repository.
 
-```bash
-# Vérifier la syntaxe de tous les fichiers Python
-python3 -m py_compile src/*.py tests/*.py
+### Runtimes
 
-# Si aucune erreur n'apparaît, la syntaxe est correcte
-```
+| Runtime | Backend | What it brings |
+|---|---|---|
+| `shell` | local shell, act and Docker | Every lab. act replays your workflows in containers that mimic the `ubuntu-24.04` runner, on your machine, without pushing anything. |
 
-**5. Lancer les tests localement :**
+What act cannot run is checked against your GitHub repository. Measured on
+2026-09-25 with act 0.2.89 and Docker 29.1.3:
 
-```bash
-# Exécuter pytest
-pytest
+| What the lab needs to run | Locally with act |
+|---|---|
+| jobs, `needs`, `if`, outputs, matrices, reusable workflows, composite actions | yes |
+| cache, masked secrets, `vars`, an event payload | yes |
+| `branches:` and `paths:` filters of `on:` | no, on your repository |
+| `services:` | no, on your repository |
+| `upload-artifact` v6 and later | no: the labs pin v5.0.0 until [nektos/act#6174](https://github.com/nektos/act/pull/6174) is merged |
+| environments, approvals, OIDC, attestations, rulesets, Scorecard, `concurrency` | no, on your repository |
 
-# Avec plus de détails
-pytest -v
+act must be 0.2.86 or later: earlier versions are vulnerable to CVE-2026-34041
+and CVE-2026-34042. The measurements are detailed in
+[`docs/conception.md`](./docs/conception.md) (French).
 
-# Voir la couverture de code
-pytest --cov=src
-```
+### The validation model
 
-**6. Vérifier le style du code (optionnel mais recommandé) :**
+Validation **proves what your workflows do, it does not trust the learner**.
+Every lab ships `pytest` tests under `challenge/tests/` that **run your
+workflows with act** and check what they produced: the test job succeeded
+**and** fails when a test breaks, the secret went through **and** stays
+masked, the action is pinned **and** on the SHA of the announced tag. A test
+that only checks that a keyword appears in the YAML is rejected.
 
-```bash
-# Installer les linters
-pip install ruff black
+- On the trainer side, `scripts/valider-labs.py` chains `dsoxlab run`, `check`
+  and `clean` to prove each lab **both ways**: 0 before the work, 100 after the
+  reference solution (`solution/`), and 0 again after a reset.
+- In `dsoxlab check` (the learner path), the tests validate **your** work, in
+  your `challenge/work/`.
+- The last test of a lab exercises **both sides**: what must be refused is
+  refused, what must pass passes.
 
-# Vérifier le style avec ruff
-ruff check .
+### Scoring, hints, progress
 
-# Formater le code avec black
-black --check .  # Vérifier seulement
-black .          # Appliquer le formatage
-```
+`check` records a score (passed tests/total, minus the cost of the hints used).
+Hints have a **variable cost**: revealing one deducts points, hence their
+opt-in nature. The history lives in a SQLite database **specific to this
+repository** (`.dsoxlab.db`, at the root, gitignored); `dsoxlab scores` and
+`dsoxlab progress` read it. The active session is stored per repository in
+`.dsoxlab-context.json`.
 
-**Exemple de session complète :**
+## Catalog
 
-```bash
-$ cd tp-01-premier-workflow/challenge
-$ python3 -m venv .venv && source .venv/bin/activate
-$ pip install -r requirements.txt
-...
-$ pytest -v
-========================= test session starts ==========================
-collected 4 items
+The labs live under `labs/` and are ordered by `meta.yml`, one course module
+per section. The table below is generated from the actual `lab.yaml` files:
+run `python3 scripts/gen_catalog.py` to refresh it. Upcoming labs are tracked
+in the [milestones](https://github.com/stephrobert/github-actions-training/milestones).
 
-tests/test_calculator.py::test_add PASSED                         [ 25%]
-tests/test_calculator.py::test_subtract PASSED                    [ 50%]
-tests/test_calculator.py::test_multiply PASSED                    [ 75%]
-tests/test_calculator.py::test_divide PASSED                      [100%]
+<!-- LABS:START -->
+### Writing your first workflow
 
-========================== 4 passed in 0.02s ===========================
-```
+| Lab (id) | Title | Level | Certif | Runtime | Companion guide |
+|---|---|---|---|---|---|
+| `fondations-premier-workflow` | First workflow: the tests run on every push, and a broken test turns the pipeline red | fondations | - | shell | [guide](https://blog.stephane-robert.info/docs/pipeline-cicd/github/fondations/workflow/) |
 
-Si tous les tests passent localement, vous pouvez créer votre workflow CI !
+_1 lab, table generated by `scripts/gen_catalog.py`._
+<!-- LABS:END -->
 
----
+## Contributing & license
 
-### act — Exécuter les workflows localement
+- Contributing: see [CONTRIBUTING](./CONTRIBUTING.md).
+- Conduct: [Code of Conduct](./CODE_OF_CONDUCT.md) · Security: [SECURITY](./SECURITY.md).
+- What changed, and when: [CHANGELOG](./CHANGELOG.md). It is dated, not
+  versioned: this project has no tags and no releases, and what matters for a
+  lab is the day it was proven, with which version of act.
+- Corrections to the blog lessons found by the labs: [corrections-guides](./docs/corrections-guides.md) (French).
+- License: [CC BY 4.0](./LICENSE).
 
-[act](https://github.com/nektos/act) permet d'exécuter vos workflows GitHub Actions
-sur votre machine, sans pousser sur GitHub. Idéal pour le développement itératif.
+### License
 
-**Installation :**
+Copyright (c) 2026 Stéphane Robert, https://blog.stephane-robert.info
 
-```bash
-# Linux
-curl -s https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+This work is licensed under the
+[Creative Commons Attribution 4.0 International License (CC BY 4.0)](./LICENSE).
+You are free to share and adapt it for any purpose, even commercially, under one
+condition: give appropriate credit to Stéphane Robert, provide a link to the
+blog, and indicate if changes were made, without suggesting the author endorses
+you or your use.
 
-# macOS
-brew install act
-
-# Windows
-choco install act-cli
-```
-
-**Pré-requis :** Docker doit être installé et en cours d'exécution.
-
-**Première utilisation :**
-
-```bash
-# Lancer le workflow par défaut (événement push)
-act
-
-# act vous demandera quelle image Docker utiliser :
-# - Micro   : ~200MB, fonctionnalités limitées
-# - Medium  : ~500MB, bon compromis (recommandé)
-# - Large   : ~18GB, image complète comme GitHub
-```
-
-**Commandes courantes :**
-
-```bash
-# Lister les workflows disponibles
-act -l
-
-# Exécuter un événement spécifique
-act push                    # Simule un push
-act pull_request            # Simule une PR
-act workflow_dispatch       # Déclenche manuellement
-
-# Exécuter un job spécifique
-act -j test                 # Lance uniquement le job "test"
-
-# Exécuter un workflow spécifique
-act -W .github/workflows/ci.yml
-
-# Mode verbose (voir les commandes exécutées)
-act -v
-
-# Passer des secrets (ne pas les mettre en clair dans l'historique !)
-act -s MY_SECRET=value
-act --secret-file .secrets  # Fichier .secrets (à ajouter au .gitignore !)
-```
-
-**Fichier de configuration `.actrc` :**
-
-Créez un fichier `.actrc` à la racine du projet pour éviter de répéter les options :
-
-```bash
-# .actrc
--P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-24.04
--P ubuntu-24.04=ghcr.io/catthehacker/ubuntu:act-24.04
---secret-file .secrets
-```
-
-**Limitations de act :**
-
-- ❌ Pas de support pour les services Docker (`services:`)
-- ❌ Les caches GitHub (`actions/cache`) ne fonctionnent pas
-- ❌ Pas d'accès aux secrets GitHub (il faut les passer manuellement)
-- ❌ Certaines actions du Marketplace peuvent ne pas fonctionner
-
-## Ressources complémentaires
-
-### Documentation officielle
-
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Workflow syntax reference](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions)
-- [Security hardening](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
-
-## Contribution
-
-Les contributions sont les bienvenues ! Consultez [CONTRIBUTING.md](CONTRIBUTING.md)
-pour les guidelines.
-
-## Licence
-
-Ce projet est sous licence MIT. Voir [LICENSE](LICENSE) pour plus de détails.
+`LICENSE` holds the official license text only, with no added header: that is
+what lets GitHub detect the license.

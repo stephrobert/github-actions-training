@@ -16,6 +16,9 @@ on:
 permissions:
   actions: read      # Pour accéder aux infos du workflow run
   contents: read
+  # La seule écriture du workflow, et elle est nécessaire : c'est par elle
+  # que CodeQL dépose son SARIF dans l'onglet Sécurité. Sans elle, l'analyse
+  # tourne et ses constats ne sont publiés nulle part.
   security-events: write
 
 jobs:
@@ -32,6 +35,12 @@ jobs:
       # Checkout du code source
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # Sans cette ligne, checkout laisse le jeton du job dans
+          # `.git/config`, où tout step suivant peut le lire. C'est le constat
+          # `artipacked` de zizmor, et ce dépôt ne peut pas l'enseigner dans
+          # ses labs en le commettant dans les siens.
+          persist-credentials: false
 
       # Initialisation de CodeQL
       - name: Initialize CodeQL

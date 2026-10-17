@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+"""Génère la table des labs (id, titre, niveau, runtime, guide) dans les README.
+
+Source de vérité : l'ordre des sections de meta.yml + chaque labs/**/lab.yaml
+(et lab.fr.yaml pour le titre français). Écrit entre les marqueurs
+<!-- LABS:START --> et <!-- LABS:END --> de README.md et README.fr.md.
+
+Usage :
+    python3 scripts/gen_catalog.py           # régénère les README
+    python3 scripts/gen_catalog.py --check    # échoue (exit 1) si un README est périmé
+"""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+# Un seul chemin de lecture pour tout le catalogue : voir scripts/lecture_yaml.py.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lecture_yaml import YamlIllisible, lire_yaml
+
+ROOT = Path(__file__).resolve().parent.parent
+META = ROOT / "meta.yml"
+START, END = "<!-- LABS:START -->", "<!-- LABS:END -->"
+
+# En-têtes de colonnes par langue.
+HEAD = {
+    "en": ("Lab (id)", "Title", "Level", "Certif", "Runtime", "Companion guide"),
+    "fr": ("Lab (id)", "Titre", "Niveau", "Certif", "Runtime", "Guide compagnon"),
+}
+SECTION_LABEL = {"en": "Section", "fr": "Section"}
+
+
+def _runtime_label(lab: dict) -> str:
+    rt = lab.get("runtime") or {}
+    return str(rt.get("type", "shell"))
+
+
+def _rows_by_section() -> list[tuple[str, str, list[dict]]]:
+    """Retourne [(section_id, section_title, [lab_dict, ...]), ...] dans l'ordre meta.yml."""
+    try:
+        meta = lire_yaml(META)
+    except YamlIllisible as exc:
+        # Sans meta.yml il n'y a pas de catalogue du tout : on s'arrête. Mais on
+        # s'arrête en DISANT quoi, pas sur une trace d'appels.
+        sys.exit(f"catalogue ingénérable : {exc}")
+    out: list[tuple[str, str, list[dict]]] = []
+    for section in meta.get("sections", []):
+        labs: list[dict] = []
+        for rel in section.get("labs") or []:
+            lab_dir = ROOT / "labs" / rel
+            lab_yaml = lab_dir / "lab.yaml"
+            if not lab_yaml.exists():
+                continue
+            try:
+                lab = lire_yaml(lab_yaml)
+            except YamlIllisible as exc:
+                print(f"  lab écarté du catalogue : {rel}/{exc}", file=sys.stderr)
+                continue
+            fr_yaml = lab_dir / "lab.fr.yaml"
+            lab["_title_fr"] = lab.get("title", "")
+            if fr_yaml.exists():
+                try:
+                    fr = lire_yaml(fr_yaml)
+                except YamlIllisible as exc:
+                    print(f"  {rel}/{exc}", file=sys.stderr)
+                    fr = {}
+                lab["_title_fr"] = fr.get("title", lab.get("title", ""))
+            labs.append(lab)
+        if labs:
+            out.append((section.get("id", ""), section.get("title", ""), labs))
+    return out
+
+
+def _certif_cell(lab: dict) -> str:
+    """Rend les certifications visées (certification_tags), ex. « RHCSA · LFCS »."""
+    tags = lab.get("certification_tags") or []
+    if not tags:
+        return "-"
+    return " · ".join(str(t).upper() for t in tags)
+
+
+def _guide_cell(lab: dict, lang: str) -> str:
+    url = lab.get("doc_url", "")
+    if not url:
+        return "-"
+    # Même mot dans les deux langues : la condition ne servait à rien.
+    return f"[guide]({url})"
+
+
+def _titres_fr() -> dict[str, str]:
+    """Titres français des sections, lus dans meta.fr.yml et appariés par id.
+
+    Ici meta.yml est en anglais, parce qu'il fait foi pour dsoxlab. Sans cette
+    table, le README français affichait ses sections en anglais (mesuré :
+    « Writing your first workflow » sous le titre « Catalogue »).
+    """
+    chemin = ROOT / "meta.fr.yml"
+    if not chemin.exists():
+        return {}
+    try:
+        meta_fr = lire_yaml(chemin)
+    except YamlIllisible as exc:
+        print(f"  titres français ignorés : {exc}", file=sys.stderr)
+        return {}
+    return {s.get("id", ""): s.get("title", "") for s in meta_fr.get("sections") or []}
+
+
+def _table(lang: str) -> str:
+    head = HEAD[lang]
+    titres_fr = _titres_fr() if lang == "fr" else {}
+    lines: list[str] = []
+    for sid, stitle, labs in _rows_by_section():
+        lines.append(f"### {titres_fr.get(sid) or stitle}")
+        lines.append("")
+        lines.append("| " + " | ".join(head) + " |")
+        lines.append("|" + "|".join(["---"] * len(head)) + "|")
+        for lab in labs:
+            title = lab["_title_fr"] if lang == "fr" else lab.get("title", "")
+            lines.append(
+                "| `{id}` | {title} | {level} | {certif} | {rt} | {guide} |".format(
+                    id=lab.get("id", ""),
+                    title=title,
+                    level=lab.get("level", ""),
+                    certif=_certif_cell(lab),
+                    rt=_runtime_label(lab),
+                    guide=_guide_cell(lab, lang),
+                )
+            )
+        lines.append("")
+    total = sum(len(labs) for _s, _t, labs in _rows_by_section())
+    # Les deux branches étaient identiques : le README anglais affichait donc
+    # sa légende en français. La condition existait, la traduction non.
+    caption = (
+        f"_{total} lab{'s' if total > 1 else ''}, table generated by `scripts/gen_catalog.py`._"
+        if lang == "en"
+        else f"_{total} lab{'s' if total > 1 else ''}, table générée par `scripts/gen_catalog.py`._"
+    )
+    lines.append(caption)
+    return "\n".join(lines)
+
+
+def _rendered(path: Path, block: str) -> str:
+    text = path.read_text(encoding="utf-8")
+    if START not in text or END not in text:
+        raise SystemExit(f"marqueurs absents dans {path}")
+    pre = text.split(START)[0]
+    post = text.split(END)[1]
+    return f"{pre}{START}\n{block}\n{END}{post}"
+
+
+TARGETS = {"README.md": "en", "README.fr.md": "fr"}
+
+
+def _check() -> int:
+    stale = []
+    for name, lang in TARGETS.items():
+        path = ROOT / name
+        if path.read_text(encoding="utf-8") != _rendered(path, _table(lang)):
+            stale.append(name)
+    if stale:
+        print(
+            "Catalogue périmé dans : "
+            + ", ".join(stale)
+            + "\nLance `python3 scripts/gen_catalog.py` puis recommite.",
+            file=sys.stderr,
+        )
+        return 1
+    print("catalogue à jour")
+    return 0
+
+
+def _write() -> None:
+    for name, lang in TARGETS.items():
+        path = ROOT / name
+        path.write_text(_rendered(path, _table(lang)), encoding="utf-8")
+    print("catalogue régénéré dans README.md et README.fr.md")
+
+
+def main() -> None:
+    if "--check" in sys.argv[1:]:
+        raise SystemExit(_check())
+    _write()
+
+
+if __name__ == "__main__":
+    main()

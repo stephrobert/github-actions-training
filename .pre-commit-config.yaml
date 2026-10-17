@@ -1,0 +1,120 @@
+# Les hooks du catalogue.
+#
+# Repris de `kubernetes-dsoxlab-training`, dont la CI rejoue exactement cette
+# configuration plutôt qu'une copie : un hook ajouté ici est un contrôle ajouté
+# à la CI, et les deux ne peuvent pas diverger.
+#
+# ## Ce qui est propre à ce dépôt
+#
+# Les points de départ sont FAUTIFS PAR CONSTRUCTION : un `challenge/` peut
+# porter une action non épinglée, `write-all` ou une injection, puisque c'est ce
+# que l'apprenant doit corriger. Les contrôles de workflows ne passent donc
+# jamais sur `labs/**/challenge/`, mais sur `.github/` et sur `labs/**/solution/`,
+# où l'exemplarité est due.
+#
+# ## Deux étapes
+#
+# `pre-commit` porte ce qui est instantané. `pre-push` porte ce qui coûte :
+# `validate-structure` lit tous les labs, `catalog-fresh` régénère le catalogue.
+# Rien ne joue act ici : une validation dure des minutes et a son script.
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        # Les workflows fautifs des points de départ restent du YAML valide ;
+        # ceux qui ne le sont pas volontairement s'excluent nommément.
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-added-large-files
+      - id: detect-private-key
+      - id: mixed-line-ending
+
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff (lint du python du catalogue)
+        # `--force-exclude` n'est pas une precaution : sans lui, l'`exclude` du
+        # pyproject est IGNORE pour tout fichier passe en argument, et
+        # pre-commit passe justement les fichiers en argument. Mesure du
+        # 2026-09-25 : ruff a ainsi trie les imports d'une fixture de lab,
+        # c'est-a-dire modifie le point de depart livre a l'apprenant, alors
+        # que `ruff check .` lance a la main respectait l'exclusion.
+        entry: uvx ruff check --fix --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+
+      - id: actionlint
+        name: actionlint (syntaxe des workflows du dépôt et des solutions)
+        entry: scripts/hooks/actionlint-cible.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: zizmor
+        name: zizmor (workflows du dépôt et des solutions, persona regular)
+        entry: scripts/hooks/zizmor-cible.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: dependabot-schema
+        name: dependabot.yml est conforme au schéma officiel
+        entry: uvx check-jsonschema --builtin-schema vendor.dependabot
+        language: system
+        files: ^\.github/dependabot\.yml$
+
+      - id: trufflehog
+        name: trufflehog (chasse aux secrets)
+        entry: trufflehog git file://. --since-commit HEAD --results=verified --fail --no-update
+        language: system
+        pass_filenames: false
+
+      - id: meta-declare-les-labs
+        name: meta.yml et labs/ décrivent le même catalogue
+        entry: uv run --no-sync pytest tests/test_meta_declare_les_labs.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: style-apprenant
+        name: pas d'emoji ni de tiret cadratin dans ce que l'apprenant lit
+        entry: uv run --no-sync pytest tests/test_style_apprenant.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: indices
+        name: les indices sont écrits, bilingues, à coût croissant
+        entry: uv run --no-sync pytest tests/test_hints_ecrits.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: solutions-exemplaires
+        name: chaque solution épingle ses actions et limite ses permissions
+        entry: uv run --no-sync pytest tests/test_solutions_exemplaires.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: validate-structure
+        name: dsoxlab validate-structure
+        entry: uvx dsoxlab validate-structure
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
+      - id: catalog-fresh
+        name: le catalogue du README est à jour
+        entry: uv run --no-sync python scripts/gen_catalog.py --check
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

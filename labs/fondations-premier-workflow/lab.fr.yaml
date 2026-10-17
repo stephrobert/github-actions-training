@@ -1,0 +1,7 @@
+id: fondations-premier-workflow
+title: "Premier workflow : les tests tournent à chaque push, et un test cassé fait échouer le pipeline"
+description: |
+  Une petite bibliothèque Python avec neuf tests que personne ne lance avant
+  de fusionner. Écrivez le workflow qui les joue à chaque push et à chaque
+  pull request, avec des permissions minimales et des actions épinglées, et
+  prouvez-le en cassant un test.

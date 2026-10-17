@@ -1,0 +1,9 @@
+# L'image qui joue `runs-on: ubuntu-24.04`, epinglee par DIGEST.
+#
+# Un tag flottant comme `act-24.04` change sous vos pieds : le meme workflow
+# passerait un jour et echouerait le lendemain, sans qu'une ligne ait bouge.
+# Le digest ci-dessous designe l'image construite le 2026-08-15, celle sur
+# laquelle ce lab a ete eprouve.
+#
+# Cette ligne l'emporte sur votre `~/.actrc` : c'est voulu.
+-P ubuntu-24.04=catthehacker/ubuntu:act-24.04@sha256:c58e2b364da03b0c804c7d660f2ecbedf2f221a382b9baa0b344b0144780ff43
