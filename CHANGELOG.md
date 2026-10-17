@@ -2,22 +2,70 @@
 
 **Language:** [English](./CHANGELOG.md) · [Français](./CHANGELOG.fr.md)
 
-This log is dated, not versioned. That is a deliberate departure from the
-sibling catalogues, which follow [Keep a Changelog](https://keepachangelog.com/)
-and semantic versioning: **this project has no tags, no releases and no
-versioned changelog** since the decision of 2026-09-25. A version number
-promises compatibility between two states of a piece of software; a lab
-catalogue has no such promise to make, and a learner never plays "version 1.2"
-of a lab, they play the one that is online.
+This log is **dated and versioned**, following
+[Keep a Changelog](https://keepachangelog.com/) and semantic versioning like
+the sibling catalogues. From 2026-09-25 to 2026-10-17 it was dated only, on the
+grounds that a lab catalogue promises no compatibility between two of its
+states; the twelve catalogues now publish one release each, and this one is no
+longer the exception.
 
-What the date does bring: knowing **when** a lab was proven, with which version
-of act and on which runner image. That is what `validation-labs.json` records
-lab by lab, and what this log summarises.
+What the date brings, and which the version does not replace: knowing **when** a
+lab was proven, with which version of act and on which runner image. That is
+what `validation-labs.json` records lab by lab, and what this log summarises.
 
-Releases `v1.0.1` through `v1.2.0`, published in December 2025, remain in place
-and are not continued.
+Releases `v1.0.0` through `v1.2.0`, published in December 2025, have been
+**deleted**. They had 39 downloads between them, measured before the deletion,
+and their numbering made any restart unreadable: a version does not go
+backwards, and 0.2.0 under v1.2.0 would have lied about the order of things.
 
 ---
+
+## [0.2.0] - 2026-10-17
+
+### Changed
+
+- **The versioning restarts at 0.2.0, and the five old releases are gone.** This
+  catalogue was the only one of the twelve without a release, and its
+  `pyproject.toml` nevertheless declared `0.2.0` under tags published up to
+  `v1.2.0`: the version went backwards, which no ordering can make sense of. The
+  releases `v1.0.0` through `v1.2.0` and their tags have been deleted, and this
+  one is the first of the new count.
+
+- **The default branch is `main`.** It was the only one of the thirteen
+  repositories still on `master`. Three workflows triggered on
+  `branches: [master]`, namely `ci.yml`, `codeql.yml` and `scorecard.yml`: renaming a
+  branch does **not** update the files that name it, so CodeQL and Scorecard
+  would simply have stopped running, with no error and nothing to say so. They
+  trigger on `main`, and a check reads the loaded workflow rather than the text
+  to prove it.
+
+- **The publishing chain is in place**: `release.yml`, `attester.yml` and the two
+  `RELEASING` files, whose bundle distinguishes required paths from optional
+  ones. Since dsoxlab 0.5.1 these come from `new catalog`, and a ratchet in the
+  engine compares the required list to what a fresh catalogue actually holds.
+
+- **The validator reads the contract, not the terminal panel.**
+  `scripts/valider-labs.py` parsed the score out of what `dsoxlab check`
+  *displays*. That panel is interface: it changed in dsoxlab 0.4.0 and the
+  regex stopped finding anything. It now reads `check --json`, which carries a
+  `schema`, and the reading lives in `scripts/verdict_check.py`, **identical in
+  all twelve catalogs**.
+
+- **Three verdicts, not two.** A run where every collected test skipped
+  measured nothing: it is **SKIP**, neither green nor red, and it stays to be
+  measured. Painting it red would accuse the lab of what is missing from the
+  machine. `--check` therefore exits `10` in that case, against `1` for a RED,
+  mirroring `dsoxlab doctor --strict` where 9 is repaired and 10 is remeasured.
+
+- **The README takes the reference structure** shared by the twelve catalogs:
+  fourteen sections, in both languages. Seven of them describe dsoxlab rather
+  than the subject, and are therefore identical everywhere.
+
+### Requires
+
+- **dsoxlab 0.4.1 or later**, which introduced the `status` field of
+  `check --json`. Without it the validator refuses to conclude rather than
+  guessing.
 
 ## 2026-09-25
 

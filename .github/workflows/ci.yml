@@ -24,9 +24,9 @@ name: CI
 
 on:
   push:
-    branches: [master, develop]
+    branches: [main, develop]
   pull_request:
-    branches: [master, develop]
+    branches: [main, develop]
 
 # Refus par défaut : un job déclare ce dont il a besoin, rien ne s'hérite.
 permissions: {}

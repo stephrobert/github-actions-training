@@ -15,14 +15,14 @@ rather than working around it locally.
 uv tool install dsoxlab        # the CLI, an external tool
 git clone https://github.com/stephrobert/github-actions-training.git
 cd github-actions-training
-git switch develop             # never work on master
+git switch develop             # never work on main
 mise install                   # act, actionlint, zizmor, pinact, poutine, uv
 dsoxlab doctor                 # check the environment
 ```
 
 ## Branches
 
-`master` stays in its published state until the rebuilt catalogue is complete
+`main` stays in its published state until the rebuilt catalogue is complete
 and validated. Work happens on a **dedicated branch**, opened from `develop`,
 and comes back to `develop` through a pull request. No automatic merge.
 

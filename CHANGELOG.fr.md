@@ -2,22 +2,72 @@
 
 **Langue :** [English](./CHANGELOG.md) · [Français](./CHANGELOG.fr.md)
 
-Ce journal est daté, et non versionné. C'est un écart assumé avec les
-catalogues frères, qui suivent [Keep a Changelog](https://keepachangelog.com/)
-et le versionnement sémantique : **ce projet n'a ni tag, ni release, ni
-CHANGELOG versionné** depuis la décision du 2026-09-25. Un numéro de version
-promet une compatibilité entre deux états d'un logiciel ; un catalogue de labs
-n'a rien de tel à promettre, et un apprenant ne joue jamais « la version 1.2 »
-d'un lab, il joue celui qui est en ligne.
+Ce journal est **daté et versionné**, suivant
+[Keep a Changelog](https://keepachangelog.com/) et le versionnement sémantique,
+comme les catalogues frères. Du 2026-09-25 au 2026-10-17 il n'était que daté, au
+motif qu'un catalogue de labs ne promet aucune compatibilité entre deux de ses
+états ; les douze catalogues publient désormais une release chacun, et celui-ci
+n'en est plus l'exception.
 
-Ce que la date apporte, elle : savoir **quand** un lab a été éprouvé, avec
-quelle version d'act et sur quelle image de runner. C'est ce que
-`validation-labs.json` enregistre lab par lab, et ce journal le résume.
+Ce que la date apporte, et que la version ne remplace pas : savoir **quand** un
+lab a été éprouvé, avec quelle version d'act et sur quelle image de runner.
+C'est ce que `validation-labs.json` enregistre lab par lab, et ce journal le
+résume.
 
-Les releases `v1.0.1` à `v1.2.0`, publiées en décembre 2025, restent en place et
-ne sont pas reconduites.
+Les releases `v1.0.0` à `v1.2.0`, publiées en décembre 2025, ont été
+**supprimées**. Elles cumulaient 39 téléchargements, mesurés avant la
+suppression, et leur numérotation rendait toute reprise illisible : une version
+ne recule pas, et 0.2.0 sous v1.2.0 aurait menti sur l'ordre des choses.
 
 ---
+
+## [0.2.0] - 2026-10-17
+
+### Modifié
+
+- **Le versionnement reprend à 0.2.0, et les cinq anciennes releases
+  disparaissent.** Ce catalogue était le seul des douze sans release, et son
+  `pyproject.toml` déclarait pourtant `0.2.0` sous des tags publiés jusqu'en
+  `v1.2.0` : la version reculait, ce qu'aucun ordre ne peut rattraper. Les
+  releases `v1.0.0` à `v1.2.0` et leurs tags ont été supprimés, et celle-ci est
+  la première du nouveau compte.
+
+- **La branche par défaut est `main`.** Elle était la seule des treize dépôts
+  encore sur `master`. Trois workflows se déclenchaient sur
+  `branches: [master]` : `ci.yml`, `codeql.yml` et `scorecard.yml`. Renommer une
+  branche ne met **pas** à jour les fichiers qui la nomment : CodeQL et
+  Scorecard auraient simplement cessé de tourner, sans erreur et sans que rien
+  ne le dise. Ils se déclenchent sur `main`, et un contrôle lit le workflow
+  chargé plutôt que son texte pour le prouver.
+
+- **La chaîne de publication est en place** : `release.yml`, `attester.yml` et
+  les deux `RELEASING`, dont le bundle distingue les chemins requis des chemins
+  facultatifs. Depuis dsoxlab 0.5.1, ils viennent de `new catalog`, et un
+  cliquet du moteur compare la liste des requis à ce qu'un catalogue neuf porte
+  réellement.
+
+- **Le validateur lit le contrat, plus l'encadré du terminal.**
+  `scripts/valider-labs.py` lisait le score dans ce que `dsoxlab check`
+  *affiche*. Cet encadré est de l'interface : il a changé en dsoxlab 0.4.0 et
+  la regex a cessé de trouver quoi que ce soit. Il lit désormais
+  `check --json`, qui porte un `schema`, et cette lecture vit dans
+  `scripts/verdict_check.py`, **identique dans les douze catalogues**.
+
+- **Trois verdicts, pas deux.** Une exécution dont tous les tests collectés ont
+  skippé n'a rien mesuré : elle est **SKIP**, ni verte ni rouge, et reste à
+  mesurer. La peindre en rouge accuserait le lab de ce qui manque au poste.
+  `--check` sort donc en `10` dans ce cas, contre `1` pour un ROUGE, à l'image
+  de `dsoxlab doctor --strict` où 9 se répare et 10 se remesure.
+
+- **Le README prend la structure de référence** commune aux douze catalogues :
+  quatorze sections, dans les deux langues. Sept d'entre elles décrivent
+  dsoxlab et non le sujet, et sont donc identiques partout.
+
+### Exige
+
+- **dsoxlab 0.4.1 ou plus récent**, qui a introduit le champ `status` de
+  `check --json`. Sans lui, le validateur refuse de conclure plutôt que de
+  deviner.
 
 ## 2026-09-25
 

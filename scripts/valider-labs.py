@@ -49,6 +49,10 @@ import tomllib
 from datetime import UTC, datetime
 from pathlib import Path
 
+# Le module partagé, IDENTIQUE dans les douze catalogues : il lit
+# `dsoxlab check --json` et en tire un verdict à trois issues. `scripts/` est
+# sur `sys.path` parce que c'est le répertoire de ce fichier.
+import verdict_check
 import yaml
 
 RACINE = Path(__file__).resolve().parent.parent
@@ -98,47 +102,18 @@ def dsoxlab(sous_commande: list[str], journal, timeout: int) -> subprocess.Compl
     return commande(["dsoxlab", *sous_commande], journal, timeout)
 
 
-# `FAILED chemin/test_functional.py::test_nom - message` : la ligne de résumé
-# que pytest écrit pour chaque échec, la seule qui nomme le test.
-_RE_ECHEC = re.compile(r"^FAILED\s+\S+::(\S+)", re.MULTILINE)
-
-
-def tests_en_echec(sortie: str) -> list[str]:
-    """Les noms des tests qu'un `check` a laissés rouges.
-
-    POURQUOI LES EXTRAIRE
-
-    « la solution ne fait pas passer tous les tests » dit qu'il y a un
-    problème ; il ne dit pas lequel, et c'est pourtant la seule information
-    utile pour le corriger. La sortie de pytest est dans le JSON de dsoxlab :
-    la lire coûte une expression régulière et épargne d'ouvrir le journal.
-
-    La sortie du terminal est repliée sur la largeur de la console, ce qui
-    coupe les noms longs en plein milieu. On recolle donc les lignes de
-    continuation avant de lire.
-    """
-    recollee = re.sub(r"\n(?=[A-Za-z_])", "", sortie) if "\nFAILED" not in sortie else sortie
-    noms = _RE_ECHEC.findall(recollee)
-    if not noms:
-        # Le repli a pu couper juste après « FAILED ». On retente en
-        # supprimant tous les retours à la ligne, au prix de la lisibilité.
-        noms = _RE_ECHEC.findall("FAILED " + sortie.replace("\n", ""))
-    return sorted(set(noms))
-
-
 def check(lab: str, journal) -> dict:
-    """Rend {"passed", "total", "score", "echecs"} de dsoxlab check --json."""
+    """Le `check` du lab, lu dans le CONTRAT et non dans l'encadré du terminal.
+
+    `verdict_check.lire` rend `status`, qui est le seul champ à pouvoir servir
+    de verdict : `ok` dit « aucun test n'a échoué », ce qui est vrai d'une suite
+    entièrement skippée, et `score` vaut alors 0 sans que rien ait tourné.
+    """
     res = dsoxlab(["check", lab, "--json"], journal, 900)
     try:
-        d = json.loads(res.stdout)["check"]
-    except (json.JSONDecodeError, KeyError) as e:
-        raise Echec(f"dsoxlab check n'a pas rendu de JSON lisible : {e}") from e
-    return {
-        "passed": d.get("passed", 0),
-        "total": d.get("total", 0),
-        "score": d.get("score", 0),
-        "echecs": tests_en_echec(d.get("output", "")),
-    }
+        return verdict_check.lire(res.stdout)
+    except verdict_check.JsonIllisible as erreur:
+        raise Echec(str(erreur)) from erreur
 
 
 def workdir(lab: Path) -> Path:
@@ -284,12 +259,25 @@ def poser_solution(lab: Path, journal) -> None:
 def verdict(r: dict, rejeu: bool) -> str:
     if "erreur" in r:
         return "ROUGE"
+    # Trois issues, pas deux. Une exécution qui n'a RIEN mesuré n'accuse pas le
+    # lab : elle dit que le poste n'était pas prêt (répertoire de travail non
+    # préparé, service arrêté, machine injoignable). La peindre en rouge
+    # enverrait corriger un lab qui n'a jamais tourné ; la peindre en vert
+    # serait pire. Elle reste donc à mesurer.
+    etapes = [("avant le travail", r["avant"]), ("après la solution", r["apres"])]
+    if "rejeu" in r:
+        # Le rejeu entrait dans le jugement par `passed != 0`, qui est FAUX
+        # quand rien n'a tourné : un second `run` dont la suite skippe passait
+        # donc pour un point de départ sain.
+        etapes.append(("après clean et run", r["rejeu"]))
+    for quand, c in etapes:
+        if not verdict_check.a_mesure(c):
+            r["raisons"] = [f"{quand}, {verdict_check.pourquoi_rien_mesure(c)}"]
+            return verdict_check.SKIP
     raisons = []
     if r["avant"]["passed"] != 0:
         raisons.append(f"{r['avant']['passed']} test(s) passent avant le travail")
-    if r["apres"]["total"] == 0:
-        raisons.append("aucun test n'a été collecté : le lab ne mesure rien")
-    elif r["apres"]["passed"] != r["apres"]["total"]:
+    if r["apres"]["passed"] != r["apres"]["total"]:
         restes = r["apres"]["echecs"]
         detail = f" : {', '.join(restes)}" if restes else ""
         raisons.append(
@@ -335,12 +323,30 @@ def relire() -> int:
         )
         return 1
 
-    rouges = [nom for nom in labs if verdicts[nom].get("verdict") != "VALIDE"]
-    if rouges:
-        for nom in rouges:
-            raisons = verdicts[nom].get("raisons") or [verdicts[nom].get("erreur", "raison non enregistrée")]
-            print(f"{nom} : {'; '.join(raisons)}", file=sys.stderr)
-        return 1
+    # Trois issues, et deux conclusions bien distinctes : un ROUGE est un
+    # défaut DU LAB, un SKIP est une mesure qui n'a pas eu lieu sur CE POSTE.
+    rouges = [n for n in labs if verdicts[n].get("verdict") == verdict_check.ROUGE]
+    skips = [n for n in labs if verdicts[n].get("verdict") == verdict_check.SKIP]
+    inconnus = [n for n in labs
+                if verdicts[n].get("verdict") not in
+                (verdict_check.VALIDE, verdict_check.ROUGE, verdict_check.SKIP)]
+
+    def _dire(noms: list[str], entete: str) -> None:
+        if not noms:
+            return
+        print(entete, file=sys.stderr)
+        for nom in noms:
+            raisons = (verdicts[nom].get("raisons")
+                       or [verdicts[nom].get("erreur", "raison non enregistrée")])
+            print(f"  {nom} : {'; '.join(raisons)}", file=sys.stderr)
+
+    _dire(rouges, f"{len(rouges)} lab(s) ROUGE :")
+    _dire(inconnus, f"{len(inconnus)} lab(s) au verdict illisible :")
+    _dire(skips, f"{len(skips)} lab(s) SKIP, à remesurer (le poste, pas le lab) :")
+    if rouges or inconnus:
+        return verdict_check.RC_UN_ROUGE
+    if skips:
+        return verdict_check.RC_UN_SKIP
 
     fantomes = sorted(set(verdicts) - set(labs))
     if fantomes:
@@ -351,8 +357,8 @@ def relire() -> int:
         )
         return 1
 
-    print(f"{len(labs)} lab(s), aucun ROUGE")
-    return 0
+    print(f"{len(labs)} lab(s), tous VALIDE")
+    return verdict_check.RC_TOUT_VALIDE
 
 
 def main() -> int:
@@ -386,22 +392,30 @@ def main() -> int:
 
     anciens = json.loads(RESULTATS.read_text(encoding="utf-8")) if RESULTATS.is_file() else {}
     rouges = 0
+    skips = 0
     for lab in labs:
         print(f"\n{lab.name}", flush=True)
         r = valider(lab, rejeu=not args.sans_rejeu)
         anciens[lab.name] = r
         RESULTATS.write_text(json.dumps(anciens, ensure_ascii=False, indent=1, sort_keys=True) + "\n",
                              encoding="utf-8")
-        if r["verdict"] != "VALIDE":
-            rouges += 1
+        if r["verdict"] != verdict_check.VALIDE:
+            # Le SKIP est compté à part : il ne se répare pas, il se remesure.
+            if r["verdict"] == verdict_check.SKIP:
+                skips += 1
+            else:
+                rouges += 1
             for raison in r.get("raisons", []):
                 print(f"    - {raison}")
             for e in r.get("ecarts", [])[:15]:
                 print(f"      {e}")
         print(f"    {r['verdict']} en {r['duree_s']} s")
 
-    print(f"\n{len(labs) - rouges} valide(s), {rouges} rouge(s) sur {len(labs)} lab(s). Détail : {RESULTATS}")
-    return 1 if rouges else 0
+    print(f"\n{len(labs) - rouges - skips} valide(s), {rouges} rouge(s), "
+          f"{skips} à remesurer sur {len(labs)} lab(s). Détail : {RESULTATS}")
+    if rouges:
+        return verdict_check.RC_UN_ROUGE
+    return verdict_check.RC_UN_SKIP if skips else verdict_check.RC_TOUT_VALIDE
 
 
 if __name__ == "__main__":
