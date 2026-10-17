@@ -454,11 +454,13 @@ annoncé (`checkout` v7.0.1, v4.2.2 et v4.1.1, `setup-node` v7.0.0,
   Node.js », lien
   `https://github.com/stephane-robert/github-actions-training/blob/main/tp-01-premier-workflow/README.md`.
 - **Ce qui est vrai** : le propriétaire est `stephrobert` et la branche
-  `master` ; le TP est en Python (calculatrice et pytest). Après fusion de
-  la branche `labs-socle-et-premiers-labs`, la cible devient
-  `https://github.com/stephrobert/github-actions-training/blob/master/labs/fondations/premier-workflow/scenario.md`.
+  `master` au moment du relevé, renommée `main` le 2026-10-17 ; le TP est
+  en Python (calculatrice et pytest). Après fusion de la branche
+  `labs-socle-et-premiers-labs`, la cible devient
+  `https://github.com/stephrobert/github-actions-training/blob/main/labs/fondations/premier-workflow/scenario.md`.
 - **Preuve** : `curl -s -o /dev/null -w '%{http_code}' <lien du guide>` rend
-  `404` ; la même URL avec `stephrobert` et `master` rend `200`.
+  `404` ; la même URL avec `stephrobert` et la branche par défaut rend
+  `200`.
 - **Gravité** : faux.
 - **Lab jumelé** : `premier-workflow` (#16).
 

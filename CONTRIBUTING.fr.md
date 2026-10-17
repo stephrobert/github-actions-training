@@ -16,14 +16,14 @@ la contourner localement.
 uv tool install dsoxlab        # la CLI, outil externe
 git clone https://github.com/stephrobert/github-actions-training.git
 cd github-actions-training
-git switch develop             # on ne travaille jamais sur master
+git switch develop             # on ne travaille jamais sur main
 mise install                   # act, actionlint, zizmor, pinact, poutine, uv
 dsoxlab doctor                 # vérifier l'environnement
 ```
 
 ## Les branches
 
-`master` reste dans son état publié tant que le catalogue refondu n'est pas
+`main` reste dans son état publié tant que le catalogue refondu n'est pas
 complet et validé. Le travail se fait sur une **branche dédiée**, ouverte
 depuis `develop`, et revient dans `develop` par une pull request. Aucune
 fusion automatique.
