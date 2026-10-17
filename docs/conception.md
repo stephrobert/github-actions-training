@@ -125,7 +125,8 @@ Refondu en `labs/fondations/premier-workflow`. Trois raisons, mesurées :
   challenge était en Python, et la page `workflows/index.mdx` du blog le
   décrivait dans les deux langages à la fois ;
 - le blog y renvoie par `github.com/stephane-robert/github-actions-training/blob/main/...` :
-  mauvais propriétaire (`stephrobert`) et mauvaise branche (`master`). Le lien
+  mauvais propriétaire (`stephrobert`) et mauvaise branche (`master`, renommée
+  `main` le 2026-10-17). Le lien
   est mort. C'est au blog de le corriger, vers
   `labs/fondations/premier-workflow/scenario.md`.
 

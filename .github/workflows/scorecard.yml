@@ -5,9 +5,9 @@
 name: Scorecard Analysis
 
 on:
-  # Analyse sur push vers master
+  # Analyse sur push vers main
   push:
-    branches: [master]
+    branches: [main]
   # Analyse hebdomadaire
   schedule:
     - cron: "0 6 * * 1"
