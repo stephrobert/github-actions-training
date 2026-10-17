@@ -15,6 +15,14 @@
 
 repo:
   id: github-actions-training
+  # La solution de référence est un workflow GitHub Actions, rangé dans le lab
+  # et EN CLAIR : ce dépôt n'a pas de vault, et un workflow chiffré ne se
+  # relirait pas.
+  #
+  # Sans cette déclaration, `validate-structure` le signale, à juste titre :
+  # son défaut était de ne regarder que `solution/` à la racine du dépôt, donc
+  # de ne jamais voir `labs/<lab>/solution/`. Il regarde depuis dsoxlab 0.5.0.
+  solutions: plaintext
   category: github-actions
   title: "GitHub Actions Training: verifiable labs"
   blog_url: "https://blog.stephane-robert.info/docs/pipeline-cicd/github/parcours/"
