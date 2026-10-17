@@ -9,7 +9,7 @@
 # Attester depuis le job de build donnerait le niveau 2, parce que le processus
 # qui fabrique l'archive serait aussi celui qui signe ce qu'il en dit. Ici la
 # signature vit dans `attester.yml`, un workflow réutilisable qui ne voit que
-# l'empreinte, et qui est le seul à porter `attestations: write`.
+# l'empreinte, et qui est le seul à porter `attestations` en écriture.
 #
 # Chaîne de provenance attachée à chaque release (cible « binaire ») :
 #   - provenance SLSA niveau 3 → `gh attestation verify --signer-workflow …`
@@ -115,7 +115,7 @@ jobs:
           retention-days: 1
 
   # 2. Attester, hors de portée du build. Le workflow appelé est le seul du
-  #    dépôt à recevoir `attestations: write`, et il ne reçoit qu'une empreinte.
+  #    dépôt à recevoir `attestations` en écriture, et il ne reçoit qu'une empreinte.
   provenance:
     name: Provenance SLSA
     needs: build
@@ -144,15 +144,15 @@ jobs:
     # À reconsidérer quand actionlint et Plumber sauront lire `$/`.
     uses: ./.github/workflows/attester.yml # zizmor: ignore[self-repository]
     permissions:
-      id-token: write
-      attestations: write
+      id-token: write # OIDC : l'identité qui signe est celle de ce workflow
+      attestations: write # enregistrer l'attestation auprès de GitHub
       contents: read
     with:
       subject-name: ${{ needs.build.outputs.pkg }}.tar.gz
       subject-digest: sha256:${{ needs.build.outputs.digest }}
 
   # 3. Publier. Ce job écrit la release, mais il ne peut pas attester : sans
-  #    `attestations: write`, il ne saurait pas fabriquer la provenance qu'il
+  #    `attestations` en écriture, il ne saurait pas fabriquer la provenance qu'il
   #    attache.
   publish:
     name: Publier la release

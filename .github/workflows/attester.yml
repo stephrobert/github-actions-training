@@ -13,7 +13,7 @@
 # SIGNE sa provenance, rien n'empêche techniquement le processus de build de
 # fabriquer une provenance qui ment. Le niveau 3 exige que la signature se fasse
 # hors de sa portée. Ce workflow réutilisable est cette frontière : il est le
-# seul du dépôt à recevoir la permission `attestations: write`, il ne voit
+# seul du dépôt à recevoir la permission `attestations` en écriture, il ne voit
 # jamais le contenu de l'archive, seulement son empreinte, et il n'exécute
 # aucun code du dépôt.
 #
