@@ -107,7 +107,7 @@ repos:
 
       - id: validate-structure
         name: dsoxlab validate-structure
-        entry: uvx dsoxlab validate-structure
+        entry: uvx 'dsoxlab>=0.5.0' validate-structure
         language: system
         pass_filenames: false
         stages: [pre-push]
