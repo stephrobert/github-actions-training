@@ -1,0 +1,24 @@
+# Configuration CodeQL du catalogue Cloud.
+#
+# Repris du catalogue DevSecOps, sans sa raison principale : ce catalogue ne
+# livre aucun matériau volontairement vulnérable. Ses fixtures sont des
+# gabarits (user-data troué de `???`, plan d'adressage, grille tarifaire,
+# variables d'environnement FICTIVES qui pointent les CLI sur l'émulateur
+# local). Les exclure ne cache donc rien d'exploitable, et évite qu'un faux
+# identifiant d'émulateur, bien formé par construction, devienne une alerte
+# permanente.
+#
+# Restent analysés, et ce sont eux qui peuvent nuire à quelqu'un :
+#
+#   .github/workflows/   les workflows du catalogue lui-même
+#   scripts/             l'outillage de validation des labs
+#   labs/**/challenge/   les tests pytest joués sur la machine de l'apprenant
+name: "Catalogue Cloud, hors gabarits des labs"
+
+paths-ignore:
+  # Les fixtures : le point de départ du lab, copié dans son répertoire de
+  # travail.
+  - "labs/**/fixtures/**"
+  # Les solutions de référence sont chiffrées (ansible-vault) : CodeQL n'en
+  # lirait rien d'exploitable.
+  - "solution/**"
