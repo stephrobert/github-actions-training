@@ -54,6 +54,7 @@ from pathlib import Path
 # sur `sys.path` parce que c'est le répertoire de ce fichier.
 import verdict_check
 import yaml
+from lecture_solution import est_chiffree, lire_solution
 
 RACINE = Path(__file__).resolve().parent.parent
 LABS = RACINE / "labs"
@@ -248,7 +249,13 @@ def poser_solution(lab: Path, journal) -> None:
     for fichier in fichiers:
         destination = cible / fichier.relative_to(source)
         destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(fichier, destination)
+        if est_chiffree(fichier):
+            # Posée DÉCHIFFRÉE : un workflow chiffré n'est pas un workflow,
+            # et l'erreur parlerait de YAML invalide, pas de chiffrement.
+            destination.write_text(lire_solution(fichier), encoding="utf-8")
+            shutil.copystat(fichier, destination)
+        else:
+            shutil.copy2(fichier, destination)
 
     journal.write(f"solution posée : {len(fichiers)} fichier(s)\n")
     for fichier in fichiers:

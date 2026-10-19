@@ -21,6 +21,42 @@ ne recule pas, et 0.2.0 sous v1.2.0 aurait menti sur l'ordre des choses.
 
 ---
 
+## [0.2.2] - 2026-10-19
+
+### Sécurité
+
+- **La solution de référence est chiffrée par ansible-vault, et `meta.yml` ne
+  déclare plus ses solutions en clair.** Le workflow de
+  `fondations-premier-workflow` était commité en clair dans un dépôt public :
+  l'apprenant qui clone avait la réponse sous la main.
+
+  La déclaration `solutions: plaintext` motivait ce choix par le fait qu'un
+  workflow chiffré « ne se relirait pas ». C'était vrai des OUTILS du dépôt,
+  pas une fatalité : deux lecteurs lisaient le fichier en clair, et il
+  suffisait de leur apprendre à déchiffrer.
+
+  `scripts/valider-labs.py` pose la solution par-dessus le répertoire de
+  travail : il la déchiffre à la pose. `tests/test_solutions_exemplaires.py`
+  contrôle que la solution épingle ses actions sur un SHA et déclare ses
+  `permissions` : ses trois lectures déchiffrent. Sans cette seconde
+  adaptation, le contrôle aurait gardé ses quinze verts en n'ayant plus aucun
+  `uses:` à examiner, ce qui est précisément le défaut que ce dépôt traque
+  chez les autres.
+
+  Vérifié sur le comportement : le contrôle voit les 62 lignes du workflow et
+  ses 2 `uses:` épinglés ; sans le secret, la lecture lève et les tests se
+  déclarent non joués.
+
+- **Le rejeu « 0 avant, 100 après » ne se joue plus en CI.** C'est le coût
+  assumé du chiffrement : le cycle a besoin du clair, et `.vault-pass` n'est
+  pas sur la forge, comme dans aucun catalogue de la collection. Les deux
+  étapes concernées se déclarent non jouées par un avertissement visible, au
+  lieu de passer pour un succès ou de rendre un rouge permanent.
+
+  L'opposabilité de `validation-labs.json` ne tient donc plus à cette CI mais
+  à la campagne locale qui l'a produit. L'autre voie, confier le secret à un
+  secret de dépôt, a été écartée en connaissance.
+
 ## [0.2.1] - 2026-10-19
 
 ### Modifié

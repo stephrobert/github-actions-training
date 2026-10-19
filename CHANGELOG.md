@@ -20,6 +20,41 @@ backwards, and 0.2.0 under v1.2.0 would have lied about the order of things.
 
 ---
 
+## [0.2.2] - 2026-10-19
+
+### Security
+
+- **The reference solution is encrypted with ansible-vault, and `meta.yml` no
+  longer declares its solutions as plaintext.** The workflow of
+  `fondations-premier-workflow` was committed in plaintext in a public
+  repository: anyone cloning had the answer at hand.
+
+  The `solutions: plaintext` declaration justified that by saying an encrypted
+  workflow "would no longer be read back". That was true of the repository's
+  TOOLS, not a given: two readers consumed the file in plaintext, and they
+  only had to learn to decrypt.
+
+  `scripts/valider-labs.py` lays the solution over the working directory: it
+  decrypts as it lays. `tests/test_solutions_exemplaires.py` checks that the
+  solution pins its actions to a SHA and declares its `permissions`: its three
+  reads now decrypt. Without that second change, the check would have kept its
+  fifteen greens while having no `uses:` left to examine, which is exactly the
+  fault this repository hunts for elsewhere.
+
+  Verified on behaviour: the check sees the workflow's 62 lines and its 2
+  pinned `uses:`; without the secret, the read raises and the tests declare
+  themselves not run.
+
+- **The "0 before, 100 after" replay no longer runs in CI.** That is the
+  accepted cost of encryption: the cycle needs the plaintext, and
+  `.vault-pass` is not on the forge, as in no catalogue of the collection.
+  Both affected steps declare themselves not run through a visible warning,
+  instead of passing for a success or turning permanently red.
+
+  The standing of `validation-labs.json` therefore no longer rests on this CI
+  but on the local campaign that produced it. The other option, entrusting the
+  secret to a repository secret, was knowingly set aside.
+
 ## [0.2.1] - 2026-10-19
 
 ### Changed

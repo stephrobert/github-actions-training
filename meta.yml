@@ -15,14 +15,18 @@
 
 repo:
   id: github-actions-training
-  # La solution de référence est un workflow GitHub Actions, rangé dans le lab
-  # et EN CLAIR : ce dépôt n'a pas de vault, et un workflow chiffré ne se
-  # relirait pas.
+  # La solution de référence est un workflow GitHub Actions rangé dans le lab,
+  # et elle est CHIFFRÉE par ansible-vault depuis la 0.2.2. Ce paragraphe
+  # déclarait auparavant `solutions: plaintext`, au motif qu'un workflow
+  # chiffré ne se relirait pas : c'était vrai des OUTILS du dépôt, pas une
+  # fatalité. Ils déchiffrent maintenant par `scripts/lecture_solution.py`,
+  # et l'apprenant qui clone n'a plus la réponse sous la main.
   #
-  # Sans cette déclaration, `validate-structure` le signale, à juste titre :
-  # son défaut était de ne regarder que `solution/` à la racine du dépôt, donc
-  # de ne jamais voir `labs/<lab>/solution/`. Il regarde depuis dsoxlab 0.5.0.
-  solutions: plaintext
+  # Ce que ça coûte, écrit ici plutôt que découvert : le rejeu du cycle et le
+  # contrôle d'exemplarité des workflows ne se jouent plus en CI, où
+  # `.vault-pass` n'existe pas. Ils se jouent chez le formateur, et c'est le
+  # `validation-labs.json` commité qui porte la preuve, comme dans les onze
+  # autres catalogues de la collection.
   category: github-actions
   title: "GitHub Actions Training: verifiable labs"
   blog_url: "https://www.stephane-robert.info/docs/pipeline-cicd/github/parcours/"
