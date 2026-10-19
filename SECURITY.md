@@ -18,7 +18,7 @@ If you believe you have found a vulnerability, report it privately:
   [private security advisory](https://github.com/stephrobert/github-actions-training/security/advisories/new)
   on GitHub.
 - Otherwise, use the contact details published on
-  <https://blog.stephane-robert.info>.
+  <https://www.stephane-robert.info>.
 
 Please include:
 

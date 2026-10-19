@@ -15,7 +15,7 @@ YAML ; il ne passe pas celle-ci.
 |---|---|
 | Cible | votre poste : act 0.2.89 et Docker, image `ubuntu-24.04` du runner épinglée par digest |
 | Durée | environ 30 minutes |
-| Leçons jumelées | [Qu'est-ce qu'un workflow ?](https://blog.stephane-robert.info/docs/pipeline-cicd/github/fondations/workflow/), [Sécurité : les bases](https://blog.stephane-robert.info/docs/pipeline-cicd/github/fondations/securite-bases/) |
+| Leçons jumelées | [Qu'est-ce qu'un workflow ?](https://www.stephane-robert.info/docs/pipeline-cicd/github/fondations/workflow/), [Sécurité : les bases](https://www.stephane-robert.info/docs/pipeline-cicd/github/fondations/securite-bases/) |
 | Jouable avec act | oui, entièrement |
 
 ```bash

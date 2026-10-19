@@ -2,7 +2,7 @@
 #
 # Source de vérité de l'ordre des labs et de leur regroupement en sections,
 # calqué sur le parcours du blog :
-#   https://blog.stephane-robert.info/docs/pipeline-cicd/github/parcours/
+#   https://www.stephane-robert.info/docs/pipeline-cicd/github/parcours/
 #
 # Chaque entrée `sections[].labs[]` est un chemin relatif depuis `labs/`. Le
 # lab existe pour dsoxlab si et seulement si `labs/<ce-chemin>/lab.yaml`
@@ -25,7 +25,7 @@ repo:
   solutions: plaintext
   category: github-actions
   title: "GitHub Actions Training: verifiable labs"
-  blog_url: "https://blog.stephane-robert.info/docs/pipeline-cicd/github/parcours/"
+  blog_url: "https://www.stephane-robert.info/docs/pipeline-cicd/github/parcours/"
   issues_url: "https://github.com/stephrobert/github-actions-training/issues"
   description: |
     One lab per skill of the blog's GitHub Actions course. Each lab has a

@@ -14,7 +14,7 @@ not pass this one.
 |---|---|
 | Target | your machine: act 0.2.89 and Docker, `ubuntu-24.04` runner image pinned by digest |
 | Duration | about 30 minutes |
-| Paired lessons | [What is a workflow?](https://blog.stephane-robert.info/docs/pipeline-cicd/github/fondations/workflow/), [Security: the basics](https://blog.stephane-robert.info/docs/pipeline-cicd/github/fondations/securite-bases/) |
+| Paired lessons | [What is a workflow?](https://www.stephane-robert.info/docs/pipeline-cicd/github/fondations/workflow/), [Security: the basics](https://www.stephane-robert.info/docs/pipeline-cicd/github/fondations/securite-bases/) |
 | Playable with act | yes, entirely |
 
 ```bash
