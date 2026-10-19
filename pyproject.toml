@@ -1,6 +1,6 @@
 [project]
 name = "github-actions-training"
-version = "0.2.0"
+version = "0.2.1"
 description = "Labs vérifiables de la formation GitHub Actions du blog, joués avec act"
 requires-python = ">=3.12"
 dependencies = [
