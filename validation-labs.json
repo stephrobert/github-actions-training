@@ -4,7 +4,10 @@
   "apres": {
    "echecs": [],
    "passed": 5,
+   "recorded": true,
    "score": 100,
+   "skipped": 0,
+   "status": "passed",
    "total": 5
   },
   "avant": {
@@ -16,14 +19,17 @@
     "test_un_test_casse_fait_echouer_le_pipeline"
    ],
    "passed": 0,
+   "recorded": true,
    "score": 0,
+   "skipped": 0,
+   "status": "failed",
    "total": 5
   },
-  "date": "2026-10-03",
-  "duree_s": 15,
+  "date": "2026-10-19",
+  "duree_s": 13,
   "ecarts": [],
   "etapes": [
-   "état photographié, 26 conteneur(s) Docker présents",
+   "état photographié, 6 conteneur(s) Docker présents",
    "avant le travail : 0/5",
    "après la solution : 5/5",
    "après clean et run : 0/5",
@@ -41,7 +47,10 @@
     "test_un_test_casse_fait_echouer_le_pipeline"
    ],
    "passed": 0,
+   "recorded": true,
    "score": 0,
+   "skipped": 0,
+   "status": "failed",
    "total": 5
   },
   "verdict": "VALIDE"
