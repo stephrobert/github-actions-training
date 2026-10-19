@@ -22,7 +22,7 @@ skills:
 # l'image ubuntu-24.04 du runner, épinglée par digest dans .actrc.
 distros:
   - ubuntu24
-doc_url: https://blog.stephane-robert.info/docs/pipeline-cicd/github/fondations/workflow/
+doc_url: https://www.stephane-robert.info/docs/pipeline-cicd/github/fondations/workflow/
 runtime:
   type: shell
   workdir: challenge/work

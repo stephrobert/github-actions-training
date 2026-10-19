@@ -10,7 +10,7 @@ Formation pratique **GitHub Actions et sécurité de la chaîne
 d'approvisionnement**, pilotée par la CLI
 [`dsoxlab`](https://github.com/stephrobert/dsoxlab). Ce dépôt est le **catalogue
 de labs** de la formation GitHub Actions du site
-[blog.stephane-robert.info](https://blog.stephane-robert.info/docs/pipeline-cicd/github/parcours/),
+[www.stephane-robert.info](https://www.stephane-robert.info/docs/pipeline-cicd/github/parcours/),
 du premier workflow aux runners auto-hébergés, avec un angle de durcissement
 systématique.
 
@@ -227,7 +227,7 @@ labs à venir se suivent dans les
 
 | Lab (id) | Titre | Niveau | Certif | Runtime | Guide compagnon |
 |---|---|---|---|---|---|
-| `fondations-premier-workflow` | Premier workflow : les tests tournent à chaque push, et un test cassé fait échouer le pipeline | fondations | - | shell | [guide](https://blog.stephane-robert.info/docs/pipeline-cicd/github/fondations/workflow/) |
+| `fondations-premier-workflow` | Premier workflow : les tests tournent à chaque push, et un test cassé fait échouer le pipeline | fondations | - | shell | [guide](https://www.stephane-robert.info/docs/pipeline-cicd/github/fondations/workflow/) |
 
 _1 lab, table générée par `scripts/gen_catalog.py`._
 <!-- LABS:END -->
@@ -244,7 +244,7 @@ _1 lab, table générée par `scripts/gen_catalog.py`._
 
 ### Licence
 
-Copyright (c) 2026 Stéphane Robert, https://blog.stephane-robert.info
+Copyright (c) 2026 Stéphane Robert, https://www.stephane-robert.info
 
 Ce catalogue est publié sous licence
 [Creative Commons Attribution 4.0 International (CC BY 4.0)](./LICENSE). Vous
