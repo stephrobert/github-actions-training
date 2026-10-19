@@ -21,3 +21,7 @@ __pycache__/
 # État local de dsoxlab, propre à chaque poste.
 .dsoxlab.db
 .dsoxlab-context.json
+
+# Le mot de passe qui déchiffre les solutions du formateur. Jamais commité :
+# le commiter annulerait le chiffrement, puisqu'il voyage avec ce qu'il ouvre.
+.vault-pass

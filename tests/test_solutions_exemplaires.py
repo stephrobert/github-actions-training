@@ -24,6 +24,7 @@ où l'exemplarité est due est `solution/`, et `.github/` du dépôt.
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -31,6 +32,28 @@ import yaml
 
 REPO = Path(__file__).resolve().parent.parent
 LABS = REPO / "labs"
+
+# Les solutions sont chiffrées : la lecture passe par le helper qui déchiffre,
+# comme `scripts/valider-labs.py`.
+sys.path.insert(0, str(REPO / "scripts"))
+from lecture_solution import SolutionIllisible, lire_solution  # noqa: E402
+
+
+def _texte(chemin: Path) -> str:
+    """Le contenu du workflow, déchiffré si la solution est sous vault.
+
+    Un workflow chiffré ne contient aucun `uses:`, aucun bloc `permissions`
+    et aucune expression : les contrôles de ce module passeraient donc au vert
+    sans avoir rien vu, ce qui est exactement le défaut que ce dépôt traque
+    chez les autres. Sans le secret, ils se déclarent non joués.
+
+    C'est le cas en CI, où `.vault-pass` n'existe pas : l'exemplarité des
+    solutions se contrôle chez le formateur, qui a le secret.
+    """
+    try:
+        return lire_solution(chemin)
+    except SolutionIllisible as illisible:
+        pytest.skip(f"solution non analysable : {illisible}")
 
 # `uses: owner/repo@ref  # commentaire`, lu dans le TEXTE et non dans le YAML
 # analysé : le commentaire de version disparaît à l'analyse, et c'est lui qu'on
@@ -77,7 +100,7 @@ def test_le_depot_a_des_workflows_a_controler() -> None:
 
 @pytest.mark.parametrize("chemin", CIBLES, ids=identifiant)
 def test_chaque_action_est_epinglee_avec_sa_version_en_commentaire(chemin: Path) -> None:
-    for numero, ligne in enumerate(chemin.read_text(encoding="utf-8").splitlines(), 1):
+    for numero, ligne in enumerate(_texte(chemin).splitlines(), 1):
         correspondance = RE_USES.match(ligne)
         if not correspondance:
             continue
@@ -102,7 +125,7 @@ def test_chaque_action_est_epinglee_avec_sa_version_en_commentaire(chemin: Path)
 
 @pytest.mark.parametrize("chemin", CIBLES, ids=identifiant)
 def test_aucun_job_ne_demande_plus_que_la_lecture(chemin: Path) -> None:
-    workflow = yaml.safe_load(chemin.read_text(encoding="utf-8"))
+    workflow = yaml.safe_load(_texte(chemin))
     assert isinstance(workflow, dict), f"{identifiant(chemin)} n'est pas un workflow."
 
     racine = workflow.get("permissions")
@@ -134,7 +157,7 @@ def test_aucun_job_ne_demande_plus_que_la_lecture(chemin: Path) -> None:
         ecritures = {p: d for p, d in valeur.items() if d not in LECTURES}
         if not ecritures:
             continue
-        texte = chemin.read_text(encoding="utf-8")
+        texte = _texte(chemin)
         for portee_nom in ecritures:
             motif = re.compile(rf"(#[^\n]*\n\s*)?{re.escape(portee_nom)}:\s*write[^\n]*(#[^\n]*)?")
             trouve = motif.search(texte)
