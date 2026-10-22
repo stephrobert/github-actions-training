@@ -147,3 +147,14 @@ repos:
         entry: python3 tests/outils/verdicts_et_commun_separes.py
         language: system
         pass_filenames: false
+
+      # Le garde-fou ci-dessus est lui-meme eprouve, dans les DEUX sens :
+      # quatorze cas, ceux qu'il doit refuser et ceux qu'il doit laisser
+      # passer. Un garde-fou qui refuserait aussi les commits legitimes se
+      # contourne au bout de deux jours, et ne controle alors plus rien.
+      - id: garde-fou-des-verdicts-eprouve
+        name: le garde-fou des verdicts juge dans les deux sens
+        entry: uv run --no-project --with pytest --with pyyaml pytest tests/test_verdicts_et_commun_separes.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
