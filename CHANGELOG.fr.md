@@ -21,6 +21,16 @@ ne recule pas, et 0.2.0 sous v1.2.0 aurait menti sur l'ordre des choses.
 
 ---
 
+## [Non publié]
+
+### Modifié
+
+- Le README renvoie à la documentation du moteur au lieu de la recopier
+  (dsoxlab#201) : les sections qui décrivaient le contrat de `dsoxlab` et la
+  vie d'un lab pointent sur la documentation de dsoxlab, qui reste juste quand
+  le moteur change. L'« Anatomie d'un lab » du CONTRIBUTING renvoie à la même
+  documentation pour le contrat de chaque fichier.
+
 ## [0.2.3] - 2026-10-23
 
 ### Ajouté
