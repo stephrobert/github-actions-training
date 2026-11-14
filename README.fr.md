@@ -127,43 +127,25 @@ travail.
 
 ## Comment ça marche
 
-### Le contrat déclaratif (deux niveaux)
+### Le moteur, documenté là où il vit
 
-Le catalogue est décrit par des données, pas par du code : le moteur `dsoxlab`
-reste agnostique du domaine et lit deux niveaux de fichiers.
+Ce catalogue se joue avec `dsoxlab`, qui documente lui-même son contrat et ses
+commandes. Ce README ne les répète pas, pour ne pas dériver quand le moteur
+change (issue dsoxlab #201) :
 
-- **`meta.yml`** à la racine déclare l'identité du dépôt et l'**ordre** des
-  sections affiché par `list-labs`. Chaque section est un module du parcours du
-  blog. Il n'y a pas de bloc `infra` : aucune machine à provisionner.
-- **`lab.yaml`** par lab (sous `labs/<module>-<sujet>/`) déclare ses `skills`,
-  son `level` (le module du parcours), son `runtime` et ses `fixtures`, son
-  `doc_url` (la leçon jumelée) et un bloc `validation`. Un `lab.fr.yaml`
-  optionnel surcharge le `title` et la `description` en français.
+- le contrat : `meta.yml`, `lab.yaml`, `lab.<langue>.yaml`, les runtimes et
+  leurs champs : [contrat](https://github.com/stephrobert/dsoxlab/blob/main/docs/contract-v1.fr.md) ;
+- les commandes et la vie d'un lab, de `run` à `check` :
+  [commandes](https://github.com/stephrobert/dsoxlab/blob/main/docs/commands.fr.md) et [jouer un lab](https://github.com/stephrobert/dsoxlab/blob/main/docs/learner.fr.md) ;
+- écrire un lab, et ce que contrôle `validate-structure` :
+  [guide de l'auteur](https://github.com/stephrobert/dsoxlab/blob/main/docs/catalog-author.fr.md).
 
-`dsoxlab validate-structure` vérifie tout le contrat : le `meta.yml` est
-conforme, chaque lab référencé existe avec un `lab.yaml` valide, et chaque
-fixture ou fichier de test référencé est présent.
-
-### Le cycle de vie d'un lab
-
-L'apprenant pilote tout via la CLI ; un parcours type :
-
-```bash
-dsoxlab doctor                        # vérifier l'environnement (Python, pytest, runtimes, labs)
-dsoxlab list-labs                     # parcourir le catalogue
-dsoxlab show <id>                     # métadonnées et statut d'un lab
-dsoxlab run <id>                      # préparer l'espace de travail
-dsoxlab course <id>                   # lire le cours guidé (optionnel)
-dsoxlab challenge <id>                # lire la mission (sans pas-à-pas)
-dsoxlab hint <id>                     # révéler un indice (déduit du score)
-dsoxlab check <id>                    # jouer les workflows, calculer et noter
-dsoxlab submit <id>                   # soumission finale, ferme la session
-dsoxlab progress                      # progression par bloc, score moyen
-```
-
-C'est `run` qui monte l'environnement : il crée le `workdir` du lab et copie
-les fixtures déclarées. Tout se passe ensuite sur ton poste, dans ce
-répertoire, comme dans un vrai dépôt.
+Ce qui est propre à ce catalogue : chaque section du [`meta.yml`](./meta.yml)
+est un module du parcours du blog, et il n'y a pas de bloc `infra` : aucune
+machine à provisionner. Chaque lab vit sous `labs/<module>-<sujet>/` ; son
+`level` est le module du parcours et son `doc_url` la leçon jumelée. `run`
+prépare le répertoire de travail du lab, et tout se passe ensuite sur ton
+poste, dans ce répertoire, comme dans un vrai dépôt.
 
 ### Les runtimes
 

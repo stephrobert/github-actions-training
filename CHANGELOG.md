@@ -20,6 +20,16 @@ backwards, and 0.2.0 under v1.2.0 would have lied about the order of things.
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- The README links to the engine documentation instead of copying it
+  (dsoxlab#201): the sections that described the `dsoxlab` contract and the
+  life of a lab now point to the dsoxlab docs, which stay true when the engine
+  changes. The CONTRIBUTING "Anatomy of a lab" points to the same docs for the
+  contract of each file.
+
 ## [0.2.3] - 2026-10-23
 
 ### Added

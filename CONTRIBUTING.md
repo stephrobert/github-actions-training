@@ -99,6 +99,11 @@ labs/<module>-<subject>/
     └── tests/test_functional.py  # the proof, read by pytest (fixed name)
 ```
 
+This tree shows this catalog's conventions. What each file holds for the
+engine, and which fields `lab.yaml` accepts, is documented in dsoxlab:
+[catalog author guide](https://github.com/stephrobert/dsoxlab/blob/main/docs/catalog-author.md)
+and [contract](https://github.com/stephrobert/dsoxlab/blob/main/docs/contract-v1.md).
+
 `dsoxlab new lab <id> --runtime shell` creates the skeleton. The identifier
 follows `<module>-<subject>`, lowercase and in French, the course language:
 `fondations-premier-workflow`. `section` and `level` repeat the identifier of

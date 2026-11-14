@@ -126,42 +126,24 @@ work.
 
 ## How it works
 
-### The declarative contract (two levels)
+### The engine, documented where it lives
 
-The catalogue is described by data, not by code: the `dsoxlab` engine stays
-domain-agnostic and reads two levels of files.
+This catalog is played by `dsoxlab`, which documents its own contract and
+commands. This README does not repeat them, so that it cannot drift when the
+engine changes (dsoxlab issue #201):
 
-- **`meta.yml`** at the root declares the repository identity and the
-  **order** of the sections shown by `list-labs`. Each section is a module of
-  the blog course. There is no `infra` block: no machine to provision.
-- **`lab.yaml`** per lab (under `labs/<module>-<subject>/`) declares its
-  `skills`, its `level` (the course module), its `runtime` and `fixtures`, its
-  `doc_url` (the paired lesson) and a `validation` block. An optional
-  `lab.fr.yaml` overrides the `title` and `description` in French.
+- the contract: `meta.yml`, `lab.yaml`, `lab.<lang>.yaml`, the runtimes and
+  their fields: [contract](https://github.com/stephrobert/dsoxlab/blob/main/docs/contract-v1.md);
+- the commands and the life of a lab, from `run` to `check`:
+  [commands](https://github.com/stephrobert/dsoxlab/blob/main/docs/commands.md) and [playing a lab](https://github.com/stephrobert/dsoxlab/blob/main/docs/learner.md);
+- writing a lab, and what `validate-structure` checks:
+  [catalog author guide](https://github.com/stephrobert/dsoxlab/blob/main/docs/catalog-author.md).
 
-`dsoxlab validate-structure` checks the whole contract: `meta.yml` is
-compliant, every referenced lab exists with a valid `lab.yaml`, and every
-referenced fixture or test file is present.
-
-### The lab lifecycle
-
-The learner drives everything through the CLI; a typical path:
-
-```bash
-dsoxlab doctor                        # check the environment (Python, pytest, runtimes, labs)
-dsoxlab list-labs                     # browse the catalogue
-dsoxlab show <id>                     # a lab's metadata and status
-dsoxlab run <id>                      # prepare the workspace
-dsoxlab course <id>                   # read the guided course (optional)
-dsoxlab challenge <id>                # read the mission (no step-by-step)
-dsoxlab hint <id>                     # reveal a hint (deducted from the score)
-dsoxlab check <id>                    # run the workflows, compute and score
-dsoxlab submit <id>                   # final submission, closes the session
-dsoxlab progress                      # progress per block, average score
-```
-
-`run` is what sets up the environment: it creates the lab's `workdir` and
-copies the declared fixtures. Everything then happens on your machine, in that
+What is specific to this catalog: each section of [`meta.yml`](./meta.yml) is
+a module of the blog course, and there is no `infra` block, so no machine to
+provision. Each lab lives under `labs/<module>-<subject>/`; its `level` is the
+course module and its `doc_url` the paired lesson. `run` prepares the lab's
+working directory, and everything then happens on your machine, in that
 directory, as in a real repository.
 
 ### Runtimes

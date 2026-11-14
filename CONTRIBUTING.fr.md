@@ -101,6 +101,11 @@ labs/<module>-<sujet>/
     └── tests/test_functional.py  # la preuve, lue par pytest (nom imposé)
 ```
 
+Cet arbre montre les conventions de ce catalogue. Ce que chaque fichier porte
+pour le moteur, et les champs qu'accepte `lab.yaml`, sont documentés dans
+dsoxlab : [guide de l'auteur](https://github.com/stephrobert/dsoxlab/blob/main/docs/catalog-author.fr.md)
+et [contrat](https://github.com/stephrobert/dsoxlab/blob/main/docs/contract-v1.fr.md).
+
 `dsoxlab new lab <id> --runtime shell` crée le squelette. L'identifiant suit
 `<module>-<sujet>`, en minuscules et en français :
 `fondations-premier-workflow`. `section` et `level` reprennent l'identifiant
