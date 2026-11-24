@@ -89,7 +89,6 @@ by `LAB_REPO=account/repo`, through the GitHub API. The measured table is in
 labs/<module>-<subject>/
 ├── lab.yaml, lab.fr.yaml       # the contract: section and level = course module,
 │                               # doc_url = the paired lesson, runtime.fixtures = the starting point
-├── scenario.md, .fr.md         # the situation and the goal, never a how-to
 ├── README.md, .fr.md           # the tutorial, on examples unrelated to the challenge
 ├── fixtures/                   # the starting point, copied into challenge/work by dsoxlab run
 ├── solution/                   # the reference solution, laid down for validation
@@ -131,7 +130,7 @@ assignment asks for. No block of the tutorial may be copy-pasted into
 - **Assertion messages teach.** A failing test says what is wrong and why,
   not only what was expected. It is often the only text the learner reads
   carefully.
-- A `scenario.md` describes a **situation**, never a list of commands.
+- `challenge/README.md` first describes a **situation**, never a list of commands.
 - Content is written in French first, then translated to the English files,
   which are authoritative for dsoxlab.
 

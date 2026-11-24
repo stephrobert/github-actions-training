@@ -91,7 +91,6 @@ tableau mesuré est dans [`docs/conception.md`](docs/conception.md).
 labs/<module>-<sujet>/
 ├── lab.yaml, lab.fr.yaml       # le contrat : section et level = module du parcours,
 │                               # doc_url = la leçon jumelée, runtime.fixtures = le point de départ
-├── scenario.md, .fr.md         # la situation et l'objectif, jamais un mode d'emploi
 ├── README.md, .fr.md           # le tutoriel, sur des exemples étrangers au challenge
 ├── fixtures/                   # le point de départ, copié dans challenge/work par dsoxlab run
 ├── solution/                   # la solution de référence, posée pour la validation
@@ -135,7 +134,7 @@ Le français du blog : clair, pragmatique, sans jargon inutile.
 - **Les messages d'assertion enseignent.** Un test qui échoue dit ce qui ne va
   pas et pourquoi, pas seulement ce qui était attendu. C'est souvent le seul
   texte que l'apprenant lira attentivement.
-- Le `scenario.md` décrit une **situation**, jamais une liste de commandes.
+- Le `challenge/README.md` décrit d'abord une **situation**, jamais une liste de commandes.
 - On rédige en français d'abord, puis on traduit vers les fichiers anglais,
   qui font foi pour dsoxlab.
 

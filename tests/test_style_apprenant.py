@@ -72,7 +72,7 @@ def _fichiers_lus() -> list[Path]:
 # énoncés du challenge. Le seuil suit donc le nombre de labs, et il vaut mieux
 # qu'un nombre en dur : celui de `terraform-dsoxlab-training`, 200, ne voulait
 # rien dire ici, où le catalogue commence.
-MINIMUM_PAR_LAB = 6
+MINIMUM_PAR_LAB = 4
 
 
 def test_il_y_a_des_textes_a_lire() -> None:
@@ -84,7 +84,7 @@ def test_il_y_a_des_textes_a_lire() -> None:
     assert len(trouves) >= attendu, (
         f"{len(trouves)} fichier(s) .md pour {len(labs)} lab(s), {attendu} "
         "attendus au minimum.\n\nChaque lab porte au moins ses deux README, "
-        "ses deux scénarios et ses deux énoncés de challenge. En dessous, il "
+        "et ses deux énoncés de challenge. En dessous, il "
         "en manque, ou le glob ne regarde plus au bon endroit."
     )
 
