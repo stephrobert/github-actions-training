@@ -154,7 +154,7 @@ jobs:
       # mise pose act, actionlint et zizmor aux versions que `mise.toml`
       # épingle, celles-là mêmes avec lesquelles les verdicts ont été rendus.
       - name: Installer les outils épinglés
-        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
         with:
           version: 2026.9.5
           cache: true
@@ -218,7 +218,7 @@ jobs:
         uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
 
       - name: Installer les outils épinglés
-        uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
         with:
           version: 2026.9.5
           cache: true
